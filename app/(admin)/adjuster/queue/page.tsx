@@ -7,6 +7,7 @@ import toast from 'react-hot-toast'
 import { IClaim, ClaimStatus, ClaimType, IUser } from '@/types'
 import { ClaimStatusBadge, STATUS_CONFIG } from '@/components/claims/ClaimStatusBadge'
 import { ClaimTypeIcon, TYPE_CONFIG } from '@/components/claims/ClaimTypeIcon'
+import { ClaimDrawer } from '@/components/claims/ClaimDrawer'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
@@ -31,8 +32,9 @@ export default function QueuePage() {
   const [totalPages, setTotalPages] = useState(0)
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<Set<string>>(new Set())
-  const [pendingClaim, setPendingClaim] = useState<PopulatedClaim | null>(null)
+  const [pendingClaim, setPendingClaim] = useState<{ _id: unknown; claimNumber: string } | null>(null)
   const [assigning, setAssigning] = useState(false)
+  const [drawerClaimId, setDrawerClaimId] = useState<string | null>(null)
 
   const [typeOpen, setTypeOpen] = useState(false)
   const [statusOpen, setStatusOpen] = useState(false)
@@ -310,8 +312,12 @@ export default function QueuePage() {
                 </tr>
               ) : (
                 claims.map((claim) => (
-                  <tr key={String(claim._id)} className={`hover:bg-gray-50 transition-colors ${selected.has(String(claim._id)) ? 'bg-primary-50' : ''}`}>
-                    <td className="px-4 py-3">
+                  <tr
+                    key={String(claim._id)}
+                    onClick={() => setDrawerClaimId(String(claim._id))}
+                    className={`cursor-pointer hover:bg-gray-50 transition-colors ${selected.has(String(claim._id)) ? 'bg-primary-50' : ''}`}
+                  >
+                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                       <input
                         type="checkbox"
                         checked={selected.has(String(claim._id))}
@@ -336,7 +342,7 @@ export default function QueuePage() {
                         <span className="text-gray-300 text-xs">Unassigned</span>
                       )}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center gap-2">
                         <Link
                           href={`/adjuster/${claim._id}`}
@@ -351,7 +357,7 @@ export default function QueuePage() {
 
                         {!claim.assignedAdjusterId ? (
                           <button
-                            onClick={() => setPendingClaim(claim)}
+                            onClick={() => setPendingClaim({ _id: claim._id, claimNumber: claim.claimNumber ?? '' })}
                             className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 hover:border-emerald-300 transition-all"
                           >
                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -400,6 +406,16 @@ export default function QueuePage() {
           </div>
         )}
       </Card>
+      <ClaimDrawer
+        claimId={drawerClaimId}
+        onClose={() => setDrawerClaimId(null)}
+        currentUserId={session?.user?.id}
+        onAssignMe={(c) => {
+          setPendingClaim(c)
+          setDrawerClaimId(null)
+        }}
+      />
+
       <Modal
         isOpen={!!pendingClaim}
         onClose={() => !assigning && setPendingClaim(null)}
