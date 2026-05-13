@@ -130,30 +130,30 @@ export default async function DashboardPage() {
               <p className="text-sm font-medium text-white/60 uppercase tracking-widest">{greeting}</p>
               <h1 className="text-3xl font-heading font-bold text-white mt-1">{firstName} 👋</h1>
             </div>
-            <p className="text-white/75 text-sm max-w-sm leading-relaxed">{heroSummary}</p>
+            <p className="text-white/75 text-base max-w-sm leading-relaxed">{heroSummary}</p>
 
             {/* Inline mini stats */}
             <div className="flex items-center gap-5 pt-1">
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-white/40" />
-                <span className="text-xs text-white/60">{stats.total} Total</span>
+                <span className="w-2.5 h-2.5 rounded-full bg-white/40" />
+                <span className="text-sm text-white/70">{stats.total} Total</span>
               </div>
               {stats.pending > 0 && (
                 <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-amber-300" />
-                  <span className="text-xs text-white/60">{stats.pending} Pending</span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-300" />
+                  <span className="text-sm text-white/70">{stats.pending} Pending</span>
                 </div>
               )}
               {stats.approved > 0 && (
                 <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-green-300" />
-                  <span className="text-xs text-white/60">{stats.approved} Approved</span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-green-300" />
+                  <span className="text-sm text-white/70">{stats.approved} Approved</span>
                 </div>
               )}
               {stats.rejected > 0 && (
                 <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-red-300" />
-                  <span className="text-xs text-white/60">{stats.rejected} Rejected</span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-red-300" />
+                  <span className="text-sm text-white/70">{stats.rejected} Rejected</span>
                 </div>
               )}
             </div>
