@@ -30,8 +30,11 @@ function formatDate(d: Date | string) {
 interface StatCard {
   label: string;
   value: number;
-  color: string;
-  icon: React.ReactNode;
+  sub: string;
+  iconBg: string;
+  iconColor: string;
+  borderColor: string;
+  iconPath: string;
 }
 
 function getGreeting() {
@@ -90,86 +93,53 @@ export default async function DashboardPage() {
     )
     .slice(0, 10);
 
+  const submittedCount = claims.filter((c) => c.status === 'submitted').length
+  const underReviewCount = claims.filter((c) => c.status === 'under_review').length
+  const lastApproved = claims.find((c) => c.status === 'approved')
+  const lastRejected = claims.find((c) => c.status === 'rejected')
+
   const statCards: StatCard[] = [
     {
-      label: "Total Claims",
+      label: 'Total Claims',
       value: stats.total,
-      color: "bg-primary-50 text-primary",
-      icon: (
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-          />
-        </svg>
-      ),
+      sub: stats.total === 0 ? 'No claims filed yet' : `${stats.total} claim${stats.total > 1 ? 's' : ''} on file`,
+      iconBg: 'bg-blue-50',
+      iconColor: 'text-blue-600',
+      borderColor: 'border-t-blue-500',
+      iconPath: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
     },
     {
-      label: "Pending Review",
+      label: 'Pending Review',
       value: stats.pending,
-      color: "bg-warning-light text-amber-700",
-      icon: (
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-      ),
+      sub: stats.pending === 0
+        ? 'No claims awaiting action'
+        : `${submittedCount} submitted · ${underReviewCount} under review`,
+      iconBg: 'bg-amber-50',
+      iconColor: 'text-amber-600',
+      borderColor: 'border-t-amber-500',
+      iconPath: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
     },
     {
-      label: "Approved",
+      label: 'Approved',
       value: stats.approved,
-      color: "bg-success-light text-green-700",
-      icon: (
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-      ),
+      sub: lastApproved
+        ? `Last approved ${formatDate(lastApproved.updatedAt)}`
+        : 'No approvals yet',
+      iconBg: 'bg-green-50',
+      iconColor: 'text-green-600',
+      borderColor: 'border-t-green-500',
+      iconPath: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
     },
     {
-      label: "Rejected",
+      label: 'Rejected',
       value: stats.rejected,
-      color: "bg-danger-light text-red-700",
-      icon: (
-        <svg
-          className="w-6 h-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-      ),
+      sub: lastRejected
+        ? `Last rejected ${formatDate(lastRejected.updatedAt)}`
+        : 'No rejections yet',
+      iconBg: 'bg-red-50',
+      iconColor: 'text-red-600',
+      borderColor: 'border-t-red-500',
+      iconPath: 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z',
     },
   ];
 
@@ -261,17 +231,21 @@ export default async function DashboardPage() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((card) => (
-          <Card key={card.label} className="p-5">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm text-gray-500">{card.label}</p>
-                <p className="text-3xl font-bold text-gray-900 mt-1">
-                  {card.value}
-                </p>
-              </div>
-              <div className={`p-2 rounded-lg ${card.color}`}>{card.icon}</div>
+          <div
+            key={card.label}
+            className={`bg-white rounded-xl border border-gray-100 border-t-4 ${card.borderColor} shadow-sm p-5 flex flex-col gap-4`}
+          >
+            <div className={`w-10 h-10 rounded-xl ${card.iconBg} flex items-center justify-center shrink-0`}>
+              <svg className={`w-5 h-5 ${card.iconColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d={card.iconPath} />
+              </svg>
             </div>
-          </Card>
+            <div>
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">{card.label}</p>
+              <p className="text-3xl font-bold text-gray-900 mt-1">{card.value}</p>
+              <p className="text-xs text-gray-400 mt-1.5 leading-snug">{card.sub}</p>
+            </div>
+          </div>
         ))}
       </div>
 
