@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { connectDB } from '@/lib/db'
 import Claim from '@/models/Claim'
 import { Card } from '@/components/ui/Card'
+import { StatusDonutChart } from '@/components/charts/StatusDonutChart'
 
 export const metadata: Metadata = { title: 'Statistics' }
 
@@ -46,14 +47,6 @@ export default async function StatsPage() {
         )
       : 0
 
-  const STATUS_CONFIG_CHART: Record<string, { label: string; bar: string; bg: string; dot: string }> = {
-    draft:        { label: 'Draft',        bar: 'bg-gray-400',   bg: 'bg-gray-100',   dot: 'bg-gray-400' },
-    submitted:    { label: 'Submitted',    bar: 'bg-amber-400',  bg: 'bg-amber-100',  dot: 'bg-amber-400' },
-    under_review: { label: 'Under Review', bar: 'bg-sky-500',    bg: 'bg-sky-100',    dot: 'bg-sky-500' },
-    approved:     { label: 'Approved',     bar: 'bg-green-500',  bg: 'bg-green-100',  dot: 'bg-green-500' },
-    rejected:     { label: 'Rejected',     bar: 'bg-red-500',    bg: 'bg-red-100',    dot: 'bg-red-500' },
-    closed:       { label: 'Closed',       bar: 'bg-gray-500',   bg: 'bg-gray-200',   dot: 'bg-gray-500' },
-  }
   const TYPE_CONFIG_CHART: Record<string, { label: string; bar: string; bg: string; dot: string }> = {
     auto:   { label: '🚗 Auto',    bar: 'bg-blue-500',    bg: 'bg-blue-100',    dot: 'bg-blue-500' },
     home:   { label: '🏠 Home',    bar: 'bg-violet-500',  bg: 'bg-violet-100',  dot: 'bg-violet-500' },
@@ -157,30 +150,7 @@ export default async function StatsPage() {
 
       <div className="grid lg:grid-cols-2 gap-6">
         <Card title="Claims by Status">
-          <div className="px-6 py-5 space-y-4">
-            {Object.entries(byStatus).map(([status, count]) => {
-              const cfg = STATUS_CONFIG_CHART[status] ?? { label: status, bar: 'bg-gray-400', bg: 'bg-gray-100', dot: 'bg-gray-400' }
-              const pct = total > 0 ? (count / total) * 100 : 0
-              return (
-                <div key={status} className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 w-32 shrink-0">
-                    <span className={`w-2 h-2 rounded-full shrink-0 ${cfg.dot}`} />
-                    <span className="text-sm text-gray-600 truncate">{cfg.label}</span>
-                  </div>
-                  <div className={`flex-1 ${cfg.bg} rounded-full h-2.5`}>
-                    <div
-                      className={`${cfg.bar} h-2.5 rounded-full transition-all`}
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                  <div className="flex items-center gap-1.5 w-16 justify-end shrink-0">
-                    <span className="text-sm font-semibold text-gray-800">{count}</span>
-                    <span className="text-xs text-gray-400">{pct.toFixed(0)}%</span>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+          <StatusDonutChart byStatus={byStatus} total={total} />
         </Card>
 
         <Card title="Claims by Type" className="flex flex-col">
