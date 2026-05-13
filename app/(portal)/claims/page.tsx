@@ -6,7 +6,6 @@ import { useClaimsStore } from '@/hooks/useClaims'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { ClaimStatusBadge } from '@/components/claims/ClaimStatusBadge'
-import { ClaimTypeIcon, TYPE_CONFIG as TYPE_ICON_CONFIG } from '@/components/claims/ClaimTypeIcon'
 import { IClaim, ClaimStatus, ClaimType } from '@/types'
 
 function formatCurrency(n: number) {
@@ -17,12 +16,16 @@ function formatDate(d: Date | string) {
   return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-const TYPE_CONFIG: Record<string, { label: string; iconBg: string; iconColor: string; iconPath: string }> = {
-  auto:   { label: 'Auto Insurance',   iconBg: 'bg-blue-100',    iconColor: 'text-blue-600',    iconPath: 'M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0zM13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10h1m8 0H9m4 0h2m4 0h1v-5l-3-4h-2' },
-  home:   { label: 'Home Insurance',   iconBg: 'bg-violet-100',  iconColor: 'text-violet-600',  iconPath: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
-  health: { label: 'Health Insurance', iconBg: 'bg-rose-100',    iconColor: 'text-rose-600',    iconPath: 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z' },
-  life:   { label: 'Life Insurance',   iconBg: 'bg-emerald-100', iconColor: 'text-emerald-600', iconPath: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z' },
-  travel: { label: 'Travel Insurance', iconBg: 'bg-orange-100',  iconColor: 'text-orange-600',  iconPath: 'M12 19l9 2-9-18-9 18 9-2zm0 0v-8' },
+const TYPE_CONFIG: Record<string, {
+  label: string; shortLabel: string
+  iconBg: string; iconColor: string; iconPath: string
+  badgeIcon: string; badgeBg: string; badgeText: string
+}> = {
+  auto:   { label: 'Auto Insurance',   shortLabel: 'Auto',   iconBg: 'bg-blue-100',    iconColor: 'text-blue-600',    iconPath: 'M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0zM13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10h1m8 0H9m4 0h2m4 0h1v-5l-3-4h-2', badgeIcon: '🚗', badgeBg: 'bg-blue-50',   badgeText: 'text-blue-700'   },
+  home:   { label: 'Home Insurance',   shortLabel: 'Home',   iconBg: 'bg-violet-100',  iconColor: 'text-violet-600',  iconPath: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6',  badgeIcon: '🏠', badgeBg: 'bg-amber-50',  badgeText: 'text-amber-700'  },
+  health: { label: 'Health Insurance', shortLabel: 'Health', iconBg: 'bg-rose-100',    iconColor: 'text-rose-600',    iconPath: 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z',                            badgeIcon: '❤️', badgeBg: 'bg-red-50',    badgeText: 'text-red-700'    },
+  life:   { label: 'Life Insurance',   shortLabel: 'Life',   iconBg: 'bg-emerald-100', iconColor: 'text-emerald-600', iconPath: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z', badgeIcon: '🛡️', badgeBg: 'bg-purple-50', badgeText: 'text-purple-700' },
+  travel: { label: 'Travel Insurance', shortLabel: 'Travel', iconBg: 'bg-orange-100',  iconColor: 'text-orange-600',  iconPath: 'M12 19l9 2-9-18-9 18 9-2zm0 0v-8',                                                                                                                   badgeIcon: '✈️', badgeBg: 'bg-green-50',  badgeText: 'text-green-700'  },
 }
 
 const STATUS_BORDER: Record<string, string> = {
@@ -186,8 +189,11 @@ export default function ClaimsPage() {
                 onClick={() => setTypeOpen((o) => !o)}
                 className="w-full flex items-center gap-2 text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors"
               >
-                {filters.type ? (
-                  <ClaimTypeIcon type={filters.type as ClaimType} />
+                {filters.type && TYPE_CONFIG[filters.type] ? (
+                  <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-md ${TYPE_CONFIG[filters.type].badgeBg} ${TYPE_CONFIG[filters.type].badgeText}`}>
+                    <span>{TYPE_CONFIG[filters.type].badgeIcon}</span>
+                    {TYPE_CONFIG[filters.type].shortLabel}
+                  </span>
                 ) : (
                   <span className="text-gray-500">All Types</span>
                 )}
@@ -209,15 +215,15 @@ export default function ClaimsPage() {
                       All Types
                     </span>
                   </button>
-                  {(Object.entries(TYPE_ICON_CONFIG) as [ClaimType, typeof TYPE_ICON_CONFIG[ClaimType]][]).map(([key, cfg]) => (
+                  {(Object.entries(TYPE_CONFIG) as [ClaimType, typeof TYPE_CONFIG[ClaimType]][]).map(([key, cfg]) => (
                     <button
                       key={key}
                       onClick={() => { setFilters({ type: key }); setTypeOpen(false) }}
                       className={`w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 transition-colors ${filters.type === key ? 'bg-gray-50' : ''}`}
                     >
-                      <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-md ${cfg.bg} ${cfg.text}`}>
-                        <span>{cfg.icon}</span>
-                        {cfg.label}
+                      <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-md ${cfg.badgeBg} ${cfg.badgeText}`}>
+                        <span>{cfg.badgeIcon}</span>
+                        {cfg.shortLabel}
                       </span>
                     </button>
                   ))}
