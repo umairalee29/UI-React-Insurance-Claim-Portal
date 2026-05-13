@@ -172,7 +172,7 @@ export default function QueuePage() {
           <table className="min-w-full divide-y divide-gray-100">
             <thead>
               <tr className="bg-gray-50">
-                <th className="px-4 py-3">
+                <th className="px-4 py-3 text-left">
                   <input
                     type="checkbox"
                     checked={selected.size === claims.length && claims.length > 0}
