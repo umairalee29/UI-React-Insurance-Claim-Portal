@@ -24,13 +24,14 @@ export default async function StatsPage() {
   const now = new Date()
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
 
-  const [byStatusAgg, byTypeAgg, thisMonth, approvedClaims] = await Promise.all([
+  const [byStatusAgg, byTypeAgg, thisMonth, approvedClaims, unassigned] = await Promise.all([
     Claim.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]) as Promise<AggResult[]>,
     Claim.aggregate([{ $group: { _id: '$type', count: { $sum: 1 } } }]) as Promise<AggResult[]>,
     Claim.countDocuments({ createdAt: { $gte: startOfMonth } }),
     Claim.find({ status: 'approved', approvedAmount: { $exists: true } })
       .select('estimatedAmount approvedAmount createdAt updatedAt')
       .lean() as Promise<ApprovedClaim[]>,
+    Claim.countDocuments({ $or: [{ assignedAdjusterId: null }, { assignedAdjusterId: { $exists: false } }] }),
   ])
 
   const byStatus = Object.fromEntries(byStatusAgg.map((s) => [s._id, s.count]))
@@ -46,6 +47,15 @@ export default async function StatsPage() {
           }, 0) / approvedClaims.length
         )
       : 0
+
+  const decidedClaims = (byStatus['approved'] ?? 0) + (byStatus['rejected'] ?? 0)
+  const approvalRate = decidedClaims > 0
+    ? ((byStatus['approved'] ?? 0) / decidedClaims * 100).toFixed(1)
+    : '—'
+  const resolvedClaims = (byStatus['approved'] ?? 0) + (byStatus['rejected'] ?? 0) + (byStatus['closed'] ?? 0)
+  const resolutionRate = total > 0
+    ? (resolvedClaims / total * 100).toFixed(1)
+    : '—'
 
   const TYPE_CONFIG_CHART: Record<string, { label: string; bar: string; bg: string; dot: string }> = {
     auto:   { label: '🚗 Auto',    bar: 'bg-blue-500',    bg: 'bg-blue-100',    dot: 'bg-blue-500' },
@@ -127,6 +137,48 @@ export default async function StatsPage() {
       <div>
         <h1 className="text-2xl font-heading font-bold text-gray-900">Statistics</h1>
         <p className="text-sm text-gray-500 mt-1">Overview of all claims in the system</p>
+      </div>
+
+      <div className="rounded-xl bg-gradient-to-br from-primary to-primary/75 px-8 py-6 grid grid-cols-3 divide-x divide-white/20">
+        {[
+          {
+            label: 'Approval Rate',
+            value: approvalRate === '—' ? '—' : `${approvalRate}%`,
+            sub: `${byStatus['approved'] ?? 0} approved of ${decidedClaims} decided`,
+            icon: (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            ),
+          },
+          {
+            label: 'Resolution Rate',
+            value: resolutionRate === '—' ? '—' : `${resolutionRate}%`,
+            sub: `${resolvedClaims} of ${total} claims resolved`,
+            icon: (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            ),
+          },
+          {
+            label: 'Unassigned Claims',
+            value: String(unassigned),
+            sub: unassigned === 0 ? 'All claims have an adjuster' : 'Awaiting adjuster assignment',
+            icon: (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            ),
+          },
+        ].map((item, i) => (
+          <div key={i} className="flex items-center gap-4 px-8 first:pl-0 last:pr-0">
+            <div className="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {item.icon}
+              </svg>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-white/60 uppercase tracking-wide">{item.label}</p>
+              <p className="text-3xl font-bold text-white leading-tight mt-0.5">{item.value}</p>
+              <p className="text-xs text-white/50 mt-1">{item.sub}</p>
+            </div>
+          </div>
+        ))}
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
