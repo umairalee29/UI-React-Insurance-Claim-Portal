@@ -91,7 +91,9 @@ function getHeroSummary(stats: {
     return `You have ${stats.pending} claim${stats.pending > 1 ? "s" : ""} currently awaiting review.`;
   if (stats.approved > 0)
     return `Great news — ${stats.approved} of your claim${stats.approved > 1 ? "s have" : " has"} been approved.`;
-  return `You have ${stats.total} claim${stats.total > 1 ? "s" : ""} on file. Everything is up to date.`;
+  if (stats.rejected > 0)
+    return `${stats.rejected} of your claim${stats.rejected > 1 ? "s have" : " has"} been rejected. You may file a new claim anytime.`;
+  return "All your claims have been processed. Everything is up to date.";
 }
 
 export default async function DashboardPage() {
@@ -262,18 +264,22 @@ export default async function DashboardPage() {
               </div>
 
               {/* Bottom: progress bar */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-400">{card.barLabel}</span>
-                  <span className={`text-xs font-semibold ${card.iconColor}`}>{card.barPct}%</span>
+              {stats.total > 0 ? (
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-400">{card.barLabel}</span>
+                    <span className={`text-xs font-semibold ${card.iconColor}`}>{card.barPct}%</span>
+                  </div>
+                  <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className={`h-1.5 ${card.barColor} rounded-full transition-all duration-500`}
+                      style={{ width: `${card.barPct}%` }}
+                    />
+                  </div>
                 </div>
-                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                  <div
-                    className={`h-1.5 ${card.barColor} rounded-full transition-all duration-500`}
-                    style={{ width: `${card.barPct}%` }}
-                  />
-                </div>
-              </div>
+              ) : (
+                <p className="text-xs text-gray-300 italic">No data yet</p>
+              )}
             </div>
         ))}
       </div>
