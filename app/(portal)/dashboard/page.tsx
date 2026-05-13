@@ -116,7 +116,7 @@ export default async function DashboardPage() {
       (a, b) =>
         new Date(b.changedAt).getTime() - new Date(a.changedAt).getTime(),
     )
-    .slice(0, 10);
+    .slice(0, 5);
 
   const submittedCount = claims.filter((c) => c.status === 'submitted').length
   const underReviewCount = claims.filter((c) => c.status === 'under_review').length
@@ -379,6 +379,7 @@ export default async function DashboardPage() {
                 </div>
               </div>
             ) : (
+              <>
               <div className="px-6 py-4 divide-y divide-gray-100">
                 {allHistory.map((entry, idx) => {
                   const cfg = STATUS_FEED[entry.status] ?? STATUS_FEED.draft
@@ -416,6 +417,18 @@ export default async function DashboardPage() {
                   )
                 })}
               </div>
+              <div className="px-6 py-3 border-t border-gray-100">
+                <Link
+                  href="/claims"
+                  className="flex items-center justify-center gap-1.5 text-sm font-medium text-gray-500 hover:text-primary transition-colors"
+                >
+                  View all activity
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              </div>
+              </>
             )}
           </Card>
         </div>
