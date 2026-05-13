@@ -303,33 +303,73 @@ export default function ClaimReviewPage({ params }: { params: { claimId: string 
             </div>
 
             {activeTab === 'details' && (
-              <div className="px-6 py-4 space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-gray-400 uppercase">Claimant</p>
-                    <p className="text-sm font-medium text-gray-900 mt-0.5">{claim.claimantId.name}</p>
-                    <p className="text-xs text-gray-400">{claim.claimantId.email}</p>
+              <div className="px-6 py-5 space-y-5">
+                {/* Stat tiles */}
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Claimant */}
+                  <div className="flex items-center gap-3 p-3.5 bg-gray-50 rounded-xl">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-sm font-bold text-primary">
+                      {claim.claimantId.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs text-gray-400 font-medium">Claimant</p>
+                      <p className="text-sm font-semibold text-gray-900 truncate mt-0.5">{claim.claimantId.name}</p>
+                      <p className="text-xs text-gray-400 truncate">{claim.claimantId.email}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs text-gray-400 uppercase">Assigned To</p>
-                    <p className="text-sm font-medium text-gray-900 mt-0.5">
-                      {claim.assignedAdjusterId ? claim.assignedAdjusterId.name : <span className="text-gray-400">Unassigned</span>}
-                    </p>
+
+                  {/* Assigned To */}
+                  <div className="flex items-center gap-3 p-3.5 bg-gray-50 rounded-xl">
+                    <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center shrink-0">
+                      <svg className="w-5 h-5 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                      </svg>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs text-gray-400 font-medium">Assigned Adjuster</p>
+                      {claim.assignedAdjusterId ? (
+                        <>
+                          <p className="text-sm font-semibold text-gray-900 truncate mt-0.5">{claim.assignedAdjusterId.name}</p>
+                          <p className="text-xs text-gray-400 truncate">{claim.assignedAdjusterId.email}</p>
+                        </>
+                      ) : (
+                        <p className="text-sm font-medium text-amber-500 mt-0.5">Unassigned</p>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs text-gray-400 uppercase">Filed On</p>
-                    <p className="text-sm font-medium text-gray-900 mt-0.5">{formatDate(claim.createdAt)}</p>
+
+                  {/* Filed On */}
+                  <div className="flex items-center gap-3 p-3.5 bg-gray-50 rounded-xl">
+                    <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+                      <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs text-gray-400 font-medium">Filed On</p>
+                      <p className="text-sm font-semibold text-gray-900 mt-0.5">{formatDate(claim.createdAt)}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs text-gray-400 uppercase">Incident Date</p>
-                    <p className="text-sm font-medium text-gray-900 mt-0.5">{formatDate(claim.incidentDate)}</p>
-                  </div>
-                  <div className="col-span-2">
-                    <p className="text-xs text-gray-400 uppercase">Description</p>
-                    <p className="text-sm text-gray-700 mt-1 leading-relaxed">{claim.incidentDescription}</p>
+
+                  {/* Incident Date */}
+                  <div className="flex items-center gap-3 p-3.5 bg-gray-50 rounded-xl">
+                    <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center shrink-0">
+                      <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs text-gray-400 font-medium">Incident Date</p>
+                      <p className="text-sm font-semibold text-gray-900 mt-0.5">{formatDate(claim.incidentDate)}</p>
+                    </div>
                   </div>
                 </div>
 
+                {/* Description quote block */}
+                <div className="border-l-4 border-primary/30 bg-primary/5 rounded-r-xl px-4 py-4">
+                  <p className="text-xs font-semibold text-primary/60 uppercase tracking-wide mb-2">Incident Description</p>
+                  <p className="text-sm text-gray-700 leading-relaxed">{claim.incidentDescription}</p>
+                </div>
               </div>
             )}
 
