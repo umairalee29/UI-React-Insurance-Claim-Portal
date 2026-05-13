@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useClaimsStore } from '@/hooks/useClaims'
 import { Button } from '@/components/ui/Button'
@@ -17,11 +17,11 @@ function formatDate(d: Date | string) {
 }
 
 const TYPE_CONFIG: Record<string, { label: string; iconBg: string; iconColor: string; iconPath: string }> = {
-  auto:   { label: 'Auto Insurance',   iconBg: 'bg-blue-100',    iconColor: 'text-blue-600',   iconPath: 'M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0zM13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10h1m8 0H9m4 0h2m4 0h1v-5l-3-4h-2' },
-  home:   { label: 'Home Insurance',   iconBg: 'bg-violet-100',  iconColor: 'text-violet-600', iconPath: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
-  health: { label: 'Health Insurance', iconBg: 'bg-rose-100',    iconColor: 'text-rose-600',   iconPath: 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z' },
+  auto:   { label: 'Auto Insurance',   iconBg: 'bg-blue-100',    iconColor: 'text-blue-600',    iconPath: 'M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0zM13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10h1m8 0H9m4 0h2m4 0h1v-5l-3-4h-2' },
+  home:   { label: 'Home Insurance',   iconBg: 'bg-violet-100',  iconColor: 'text-violet-600',  iconPath: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
+  health: { label: 'Health Insurance', iconBg: 'bg-rose-100',    iconColor: 'text-rose-600',    iconPath: 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z' },
   life:   { label: 'Life Insurance',   iconBg: 'bg-emerald-100', iconColor: 'text-emerald-600', iconPath: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z' },
-  travel: { label: 'Travel Insurance', iconBg: 'bg-orange-100',  iconColor: 'text-orange-600', iconPath: 'M12 19l9 2-9-18-9 18 9-2zm0 0v-8' },
+  travel: { label: 'Travel Insurance', iconBg: 'bg-orange-100',  iconColor: 'text-orange-600',  iconPath: 'M12 19l9 2-9-18-9 18 9-2zm0 0v-8' },
 }
 
 const STATUS_BORDER: Record<string, string> = {
@@ -32,6 +32,16 @@ const STATUS_BORDER: Record<string, string> = {
   rejected:     'border-l-red-500',
   closed:       'border-l-purple-500',
 }
+
+const STATUS_PILLS: { value: string; label: string; active: string; inactive: string }[] = [
+  { value: '',             label: 'All',          active: 'bg-gray-800 text-white border-gray-800',     inactive: 'border-gray-200 text-gray-500 hover:bg-gray-50'        },
+  { value: 'draft',        label: 'Draft',        active: 'bg-gray-500 text-white border-gray-500',     inactive: 'border-gray-200 text-gray-500 hover:bg-gray-50'        },
+  { value: 'submitted',    label: 'Submitted',    active: 'bg-blue-500 text-white border-blue-500',     inactive: 'border-blue-200 text-blue-600 hover:bg-blue-50'        },
+  { value: 'under_review', label: 'Under Review', active: 'bg-amber-500 text-white border-amber-500',   inactive: 'border-amber-200 text-amber-600 hover:bg-amber-50'     },
+  { value: 'approved',     label: 'Approved',     active: 'bg-green-500 text-white border-green-500',   inactive: 'border-green-200 text-green-600 hover:bg-green-50'     },
+  { value: 'rejected',     label: 'Rejected',     active: 'bg-red-500 text-white border-red-500',       inactive: 'border-red-200 text-red-600 hover:bg-red-50'           },
+  { value: 'closed',       label: 'Closed',       active: 'bg-purple-500 text-white border-purple-500', inactive: 'border-purple-200 text-purple-600 hover:bg-purple-50'  },
+]
 
 function ClaimCard({ claim }: { claim: IClaim }) {
   const typeCfg = TYPE_CONFIG[claim.type] ?? TYPE_CONFIG.auto
@@ -45,14 +55,12 @@ function ClaimCard({ claim }: { claim: IClaim }) {
       href={`/claims/${claim._id}`}
       className={`flex items-center gap-4 p-5 bg-white border border-gray-100 border-l-4 ${borderCls} rounded-xl shadow-sm hover:shadow-md hover:border-gray-200 transition-all group`}
     >
-      {/* Type icon */}
       <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${typeCfg.iconBg}`}>
         <svg className={`w-6 h-6 ${typeCfg.iconColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d={typeCfg.iconPath} />
         </svg>
       </div>
 
-      {/* Main info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2.5 flex-wrap">
           <p className="text-sm font-bold text-gray-900 group-hover:text-primary transition-colors">
@@ -64,7 +72,6 @@ function ClaimCard({ claim }: { claim: IClaim }) {
         <p className="text-xs text-gray-400 mt-0.5">Incident: {formatDate(claim.incidentDate)}</p>
       </div>
 
-      {/* Doc count */}
       <div className="hidden sm:flex items-center gap-1.5 text-gray-400 shrink-0">
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -72,7 +79,6 @@ function ClaimCard({ claim }: { claim: IClaim }) {
         <span className="text-xs">{docCount} doc{docCount !== 1 ? 's' : ''}</span>
       </div>
 
-      {/* Amount + action */}
       <div className="text-right shrink-0">
         <p className="text-base font-bold text-gray-900">{formatCurrency(amount)}</p>
         <p className={`text-xs mt-0.5 font-medium ${isApproved ? 'text-green-500' : 'text-gray-400 group-hover:text-primary transition-colors'}`}>
@@ -108,12 +114,25 @@ function ClaimCardSkeleton() {
 
 export default function ClaimsPage() {
   const { claims, loading, total, totalPages, filters, setFilters, fetchClaims } = useClaimsStore()
+  const [searchInput, setSearchInput] = useState(filters.search ?? '')
 
   useEffect(() => {
     fetchClaims()
   }, [fetchClaims])
 
-  const isFiltered = !!(filters.status || filters.type)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setFilters({ search: searchInput.trim() || undefined })
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [searchInput]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const isFiltered = !!(filters.status || filters.type || filters.search)
+
+  function clearFilters() {
+    setFilters({ status: undefined, type: undefined, search: undefined })
+    setSearchInput('')
+  }
 
   return (
     <div className="space-y-6">
@@ -135,27 +154,48 @@ export default function ClaimsPage() {
 
       <Card>
         {/* Filter bar */}
-        <div className="px-4 py-3 border-b border-gray-100 flex flex-wrap gap-3">
-          <select
-            value={filters.status ?? ''}
-            onChange={(e) => setFilters({ status: (e.target.value as ClaimStatus) || undefined })}
-            className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30"
-          >
-            <option value="">All Statuses</option>
-            {(['draft', 'submitted', 'under_review', 'approved', 'rejected', 'closed'] as ClaimStatus[]).map((s) => (
-              <option key={s} value={s}>{s.replace('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase())}</option>
-            ))}
-          </select>
-          <select
-            value={filters.type ?? ''}
-            onChange={(e) => setFilters({ type: (e.target.value as ClaimType) || undefined })}
-            className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30"
-          >
-            <option value="">All Types</option>
-            {(Object.keys(TYPE_CONFIG) as ClaimType[]).map((t) => (
-              <option key={t} value={t}>{TYPE_CONFIG[t].label}</option>
-            ))}
-          </select>
+        <div className="px-4 pt-3 pb-2.5 border-b border-gray-100 space-y-2.5">
+          {/* Row 1: search + type */}
+          <div className="flex gap-3">
+            <div className="relative flex-1">
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                placeholder="Search by claim number..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                className="w-full text-sm border border-gray-200 rounded-lg pl-9 pr-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30"
+              />
+            </div>
+            <select
+              value={filters.type ?? ''}
+              onChange={(e) => setFilters({ type: (e.target.value as ClaimType) || undefined })}
+              className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30"
+            >
+              <option value="">All Types</option>
+              {(Object.keys(TYPE_CONFIG) as ClaimType[]).map((t) => (
+                <option key={t} value={t}>{TYPE_CONFIG[t].label}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Row 2: status pills */}
+          <div className="flex gap-1.5 overflow-x-auto pb-0.5">
+            {STATUS_PILLS.map((pill) => {
+              const isActive = (filters.status ?? '') === pill.value
+              return (
+                <button
+                  key={pill.value}
+                  onClick={() => setFilters({ status: (pill.value as ClaimStatus) || undefined })}
+                  className={`shrink-0 text-xs font-medium px-3 py-1.5 rounded-full border transition-all ${isActive ? pill.active : pill.inactive}`}
+                >
+                  {pill.label}
+                </button>
+              )
+            })}
+          </div>
         </div>
 
         {/* Claim list */}
@@ -176,10 +216,7 @@ export default function ClaimsPage() {
               </p>
               <p className="text-xs text-gray-400 mt-1">
                 {isFiltered ? (
-                  <button
-                    onClick={() => setFilters({ status: undefined, type: undefined })}
-                    className="text-primary font-medium hover:underline"
-                  >
+                  <button onClick={clearFilters} className="text-primary font-medium hover:underline">
                     Clear filters
                   </button>
                 ) : (
