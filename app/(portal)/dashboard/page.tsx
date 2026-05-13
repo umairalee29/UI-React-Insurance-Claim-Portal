@@ -66,6 +66,8 @@ interface StatCard {
   iconColor: string;
   borderColor: string;
   barColor: string;
+  barPct: number;
+  barLabel: string;
   iconPath: string;
 }
 
@@ -139,6 +141,8 @@ export default async function DashboardPage() {
       iconColor: 'text-blue-600',
       borderColor: 'border-t-blue-500',
       barColor: 'bg-blue-500',
+      barPct: stats.total > 0 ? Math.round((stats.pending / stats.total) * 100) : 0,
+      barLabel: 'Active rate',
       iconPath: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
     },
     {
@@ -151,6 +155,8 @@ export default async function DashboardPage() {
       iconColor: 'text-amber-600',
       borderColor: 'border-t-amber-500',
       barColor: 'bg-amber-500',
+      barPct: stats.total > 0 ? Math.round((stats.pending / stats.total) * 100) : 0,
+      barLabel: '% of total',
       iconPath: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
     },
     {
@@ -163,6 +169,8 @@ export default async function DashboardPage() {
       iconColor: 'text-green-600',
       borderColor: 'border-t-green-500',
       barColor: 'bg-green-500',
+      barPct: stats.total > 0 ? Math.round((stats.approved / stats.total) * 100) : 0,
+      barLabel: '% of total',
       iconPath: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
     },
     {
@@ -175,6 +183,8 @@ export default async function DashboardPage() {
       iconColor: 'text-red-600',
       borderColor: 'border-t-red-500',
       barColor: 'bg-red-500',
+      barPct: stats.total > 0 ? Math.round((stats.rejected / stats.total) * 100) : 0,
+      barLabel: '% of total',
       iconPath: 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z',
     },
   ];
@@ -266,9 +276,7 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {statCards.map((card) => {
-          const pct = stats.total > 0 ? Math.round((card.value / stats.total) * 100) : 0
-          return (
+        {statCards.map((card) => (
             <div
               key={card.label}
               className={`bg-white rounded-xl border border-gray-100 border-t-4 ${card.borderColor} shadow-sm p-5 flex flex-col justify-between gap-4`}
@@ -290,19 +298,18 @@ export default async function DashboardPage() {
               {/* Bottom: progress bar */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-400">% of total claims</span>
-                  <span className={`text-xs font-semibold ${card.iconColor}`}>{pct}%</span>
+                  <span className="text-xs text-gray-400">{card.barLabel}</span>
+                  <span className={`text-xs font-semibold ${card.iconColor}`}>{card.barPct}%</span>
                 </div>
                 <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                   <div
                     className={`h-1.5 ${card.barColor} rounded-full transition-all duration-500`}
-                    style={{ width: `${pct}%` }}
+                    style={{ width: `${card.barPct}%` }}
                   />
                 </div>
               </div>
             </div>
-          )
-        })}
+        ))}
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
