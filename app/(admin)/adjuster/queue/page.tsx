@@ -56,7 +56,7 @@ export default function QueuePage() {
     search: '',
     page: 1,
     limit: 25,
-    sortBy: 'createdAt',
+    sortBy: '',
     sortOrder: 'desc',
   })
 

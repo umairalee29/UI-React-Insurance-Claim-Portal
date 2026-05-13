@@ -151,7 +151,7 @@ export function ClaimDrawer({ claimId, onClose, currentUserId, onAssignMe }: Cla
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px]"
+            className="fixed top-16 inset-x-0 bottom-0 z-40 bg-black/40 backdrop-blur-[2px]"
             onClick={onClose}
           />
 
@@ -162,7 +162,7 @@ export function ClaimDrawer({ claimId, onClose, currentUserId, onAssignMe }: Cla
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 280 }}
-            className="fixed inset-y-0 right-0 z-50 flex flex-col w-full max-w-[520px] bg-white shadow-2xl"
+            className="fixed top-16 bottom-0 right-0 z-50 flex flex-col w-full max-w-[520px] bg-white shadow-2xl"
           >
             {/* Close button always visible */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
