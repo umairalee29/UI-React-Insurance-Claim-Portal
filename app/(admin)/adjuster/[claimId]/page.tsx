@@ -1,10 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
-import { IClaim, IUser, IDocument, IAuditLog } from '@/types'
+import { IClaim, IUser, IDocument } from '@/types'
 import { ClaimStatusBadge } from '@/components/claims/ClaimStatusBadge'
 import { ClaimTypeIcon } from '@/components/claims/ClaimTypeIcon'
 import { StatusTimeline } from '@/components/claims/StatusTimeline'
@@ -28,6 +27,71 @@ const NEXT_STATUSES: Record<string, string[]> = {
   closed: [],
 }
 
+const STATUS_OPTIONS: Record<string, {
+  label: string
+  dot: string
+  selectedBorder: string
+  selectedBg: string
+  selectedText: string
+  iconBg: string
+  icon: React.ReactNode
+}> = {
+  submitted: {
+    label: 'Submitted',
+    dot: 'bg-blue-500',
+    selectedBorder: 'border-blue-500',
+    selectedBg: 'bg-blue-50',
+    selectedText: 'text-blue-700',
+    iconBg: 'bg-blue-100',
+    icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />,
+  },
+  under_review: {
+    label: 'Under Review',
+    dot: 'bg-amber-500',
+    selectedBorder: 'border-amber-500',
+    selectedBg: 'bg-amber-50',
+    selectedText: 'text-amber-700',
+    iconBg: 'bg-amber-100',
+    icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />,
+  },
+  approved: {
+    label: 'Approved',
+    dot: 'bg-green-500',
+    selectedBorder: 'border-green-500',
+    selectedBg: 'bg-green-50',
+    selectedText: 'text-green-700',
+    iconBg: 'bg-green-100',
+    icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />,
+  },
+  rejected: {
+    label: 'Rejected',
+    dot: 'bg-red-500',
+    selectedBorder: 'border-red-500',
+    selectedBg: 'bg-red-50',
+    selectedText: 'text-red-700',
+    iconBg: 'bg-red-100',
+    icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />,
+  },
+  closed: {
+    label: 'Closed',
+    dot: 'bg-purple-500',
+    selectedBorder: 'border-purple-500',
+    selectedBg: 'bg-purple-50',
+    selectedText: 'text-purple-700',
+    iconBg: 'bg-purple-100',
+    icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />,
+  },
+  draft: {
+    label: 'Draft',
+    dot: 'bg-gray-400',
+    selectedBorder: 'border-gray-400',
+    selectedBg: 'bg-gray-50',
+    selectedText: 'text-gray-700',
+    iconBg: 'bg-gray-100',
+    icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />,
+  },
+}
+
 function formatCurrency(n: number) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n)
 }
@@ -41,9 +105,7 @@ function formatSize(b: number) {
 }
 
 export default function ClaimReviewPage({ params }: { params: { claimId: string } }) {
-  const router = useRouter()
   const [claim, setClaim] = useState<PopulatedClaim | null>(null)
-  const [auditLogs, setAuditLogs] = useState<IAuditLog[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'details' | 'audit'>('details')
 
@@ -237,16 +299,45 @@ export default function ClaimReviewPage({ params }: { params: { claimId: string 
             <Card title="Update Status">
               <div className="px-6 py-4 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">New Status</label>
-                  <select
-                    value={newStatus}
-                    onChange={(e) => setNewStatus(e.target.value)}
-                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30"
-                  >
-                    {nextOptions.map((s) => (
-                      <option key={s} value={s}>{s.replace('_', ' ')}</option>
-                    ))}
-                  </select>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">New Status</label>
+                  <div className="space-y-2">
+                    {nextOptions.map((s) => {
+                      const cfg = STATUS_OPTIONS[s]
+                      if (!cfg) return null
+                      const isSelected = newStatus === s
+                      return (
+                        <button
+                          key={s}
+                          onClick={() => setNewStatus(s)}
+                          className={[
+                            'w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 text-left transition-all',
+                            isSelected
+                              ? `${cfg.selectedBorder} ${cfg.selectedBg}`
+                              : 'border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50',
+                          ].join(' ')}
+                        >
+                          <div className={[
+                            'w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all',
+                            isSelected ? cfg.iconBg : 'bg-gray-100',
+                          ].join(' ')}>
+                            <svg className={`w-4 h-4 ${isSelected ? cfg.selectedText : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              {cfg.icon}
+                            </svg>
+                          </div>
+                          <span className={`text-sm font-semibold ${isSelected ? cfg.selectedText : 'text-gray-600'}`}>
+                            {cfg.label}
+                          </span>
+                          {isSelected && (
+                            <div className={`ml-auto w-5 h-5 rounded-full flex items-center justify-center ${cfg.dot}`}>
+                              <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                              </svg>
+                            </div>
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
                 </div>
 
                 {newStatus === 'approved' && (
