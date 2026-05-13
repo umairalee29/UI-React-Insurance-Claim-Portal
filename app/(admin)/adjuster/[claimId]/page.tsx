@@ -375,105 +375,136 @@ export default function ClaimReviewPage({ params }: { params: { claimId: string 
 
             {activeTab === 'documents' && (
               claim.documents.length === 0 ? (
-                <div className="px-6 py-10 flex flex-col items-center text-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
-                    <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <div className="px-6 py-14 flex flex-col items-center text-center gap-3">
+                  <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center">
+                    <svg className="w-7 h-7 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                   </div>
-                  <p className="text-sm text-gray-400">No documents attached to this claim.</p>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">No documents attached</p>
+                    <p className="text-xs text-gray-400 mt-0.5">The claimant has not uploaded any supporting files.</p>
+                  </div>
                 </div>
               ) : (
-                <div className="px-6 py-4 space-y-2">
-                  {claim.documents.map((doc) => {
-                    const isPdf = doc.fileType === 'application/pdf'
-                    return (
-                      <div key={String(doc._id)} className="flex items-center gap-3 p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors group">
-                        <div className={`w-10 h-10 flex items-center justify-center rounded-lg shrink-0 ${isPdf ? 'bg-red-100' : 'bg-blue-100'}`}>
-                          {isPdf ? (
-                            <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                            </svg>
-                          ) : (
-                            <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-800 truncate">{doc.fileName}</p>
-                          <p className="text-xs text-gray-400 mt-0.5">{isPdf ? 'PDF Document' : 'Image'} · {formatSize(doc.fileSize)}</p>
-                        </div>
+                <div className="px-6 py-5 space-y-3">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                    {claim.documents.length} {claim.documents.length === 1 ? 'file' : 'files'} attached
+                  </p>
+                  <div className="space-y-2">
+                    {claim.documents.map((doc, idx) => {
+                      const isPdf = doc.fileType === 'application/pdf'
+                      return (
                         <a
+                          key={String(doc._id)}
                           href={`/api/documents/${doc._id}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-1.5 text-xs font-medium text-primary opacity-0 group-hover:opacity-100 transition-opacity hover:underline shrink-0"
+                          className="flex items-center gap-4 p-4 bg-gray-50 hover:bg-primary/5 border border-transparent hover:border-primary/20 rounded-xl transition-all group"
                         >
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                          </svg>
-                          Open
+                          <div className={`w-11 h-11 flex items-center justify-center rounded-xl shrink-0 ${isPdf ? 'bg-red-100' : 'bg-blue-100'}`}>
+                            {isPdf ? (
+                              <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                              </svg>
+                            ) : (
+                              <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-gray-800 truncate group-hover:text-primary transition-colors">{doc.fileName}</p>
+                            <p className="text-xs text-gray-400 mt-0.5">
+                              {isPdf ? 'PDF Document' : 'Image'} · {formatSize(doc.fileSize)}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className="text-xs text-gray-300 font-medium">#{idx + 1}</span>
+                            <div className="w-7 h-7 rounded-lg bg-white border border-gray-200 flex items-center justify-center group-hover:border-primary/30 group-hover:bg-primary/5 transition-all">
+                              <svg className="w-3.5 h-3.5 text-gray-400 group-hover:text-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                              </svg>
+                            </div>
+                          </div>
                         </a>
-                      </div>
-                    )
-                  })}
+                      )
+                    })}
+                  </div>
                 </div>
               )
             )}
 
             {activeTab === 'audit' && (
-              <div className="px-6 py-4">
+              <div className="px-6 py-5">
                 {auditLoading ? (
-                  <div className="space-y-3 py-2">
+                  <div className="space-y-4">
                     {[...Array(4)].map((_, i) => (
-                      <div key={i} className="flex gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gray-100 animate-pulse shrink-0" />
-                        <div className="flex-1 space-y-1.5 pt-1">
-                          <div className="h-3 w-48 bg-gray-100 rounded-full animate-pulse" />
-                          <div className="h-3 w-32 bg-gray-100 rounded-full animate-pulse" />
+                      <div key={i} className="flex gap-4 p-4 bg-gray-50 rounded-xl">
+                        <div className="w-9 h-9 rounded-full bg-gray-200 animate-pulse shrink-0" />
+                        <div className="flex-1 space-y-2 pt-0.5">
+                          <div className="h-3.5 w-40 bg-gray-200 rounded-full animate-pulse" />
+                          <div className="h-3 w-28 bg-gray-100 rounded-full animate-pulse" />
+                          <div className="flex gap-2 mt-1">
+                            <div className="h-5 w-20 bg-gray-100 rounded-md animate-pulse" />
+                            <div className="h-5 w-16 bg-gray-100 rounded-md animate-pulse" />
+                          </div>
                         </div>
-                        <div className="h-3 w-24 bg-gray-100 rounded-full animate-pulse mt-1" />
+                        <div className="h-3 w-20 bg-gray-100 rounded-full animate-pulse mt-1 shrink-0" />
                       </div>
                     ))}
                   </div>
                 ) : auditLogs.length === 0 ? (
-                  <p className="text-sm text-gray-400 text-center py-6">No audit history found for this claim.</p>
+                  <div className="py-14 flex flex-col items-center text-center gap-3">
+                    <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center">
+                      <svg className="w-7 h-7 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">No audit history</p>
+                      <p className="text-xs text-gray-400 mt-0.5">Actions on this claim will appear here.</p>
+                    </div>
+                  </div>
                 ) : (
-                  <ol className="relative border-l border-gray-100 ml-3 space-y-5 py-2">
+                  <div className="space-y-3">
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                      {auditLogs.length} {auditLogs.length === 1 ? 'event' : 'events'} recorded
+                    </p>
                     {auditLogs.map((log) => (
-                      <li key={log._id} className="ml-6">
-                        <span className="absolute -left-3 flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 ring-4 ring-white">
-                          <svg className="w-3 h-3 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                        </span>
-                        <div className="flex items-start justify-between gap-4">
-                          <div>
-                            <p className="text-sm font-medium text-gray-800">{log.action}</p>
-                            <p className="text-xs text-gray-400 mt-0.5">
-                              by <span className="font-medium text-gray-600">{log.performedBy.name}</span>
-                              {log.performedBy.email && <span className="text-gray-400"> · {log.performedBy.email}</span>}
-                            </p>
-                            {log.metadata && Object.keys(log.metadata).length > 0 && (
-                              <div className="mt-1.5 flex flex-wrap gap-1.5">
-                                {Object.entries(log.metadata).map(([k, v]) => (
-                                  <span key={k} className="inline-flex items-center gap-1 text-xs bg-gray-100 text-gray-600 rounded-md px-2 py-0.5">
-                                    <span className="text-gray-400">{k}:</span> {String(v)}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                          <time className="text-xs text-gray-400 shrink-0 mt-0.5">
-                            {new Date(log.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                            {' '}
-                            {new Date(log.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-                          </time>
+                      <div key={log._id} className="flex gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100/80 transition-colors">
+                        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-xs font-bold text-primary uppercase">
+                          {log.performedBy.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}
                         </div>
-                      </li>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-gray-800">{log.action}</p>
+                          <p className="text-xs text-gray-400 mt-0.5">
+                            <span className="font-medium text-gray-600">{log.performedBy.name}</span>
+                            {log.performedBy.email && <span> · {log.performedBy.email}</span>}
+                          </p>
+                          {log.metadata && Object.keys(log.metadata).length > 0 && (
+                            <div className="mt-2 flex flex-wrap gap-1.5">
+                              {Object.entries(log.metadata).map(([k, v]) => (
+                                <span key={k} className="inline-flex items-center gap-1 text-xs bg-white border border-gray-200 text-gray-600 rounded-lg px-2 py-1">
+                                  <span className="text-gray-400 font-medium">{k}</span>
+                                  <span className="text-gray-300">·</span>
+                                  <span>{String(v)}</span>
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <time className="text-xs text-gray-400 shrink-0 text-right leading-relaxed">
+                          <span className="block font-medium text-gray-500">
+                            {new Date(log.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </span>
+                          <span className="block">
+                            {new Date(log.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </time>
+                      </div>
                     ))}
-                  </ol>
+                  </div>
                 )}
               </div>
             )}
