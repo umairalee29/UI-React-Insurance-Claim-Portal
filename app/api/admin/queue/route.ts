@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
       if (dateTo) (query.createdAt as Record<string, Date>).$lte = new Date(dateTo)
     }
 
-    const validSortFields = ['createdAt', 'estimatedAmount', 'status', 'type']
+    const validSortFields = ['createdAt', 'estimatedAmount', 'status', 'type', 'claimNumber']
     const sortField = validSortFields.includes(sortBy) ? sortBy : 'createdAt'
 
     let claims = Claim.find(query)

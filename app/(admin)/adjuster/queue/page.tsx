@@ -110,6 +110,41 @@ export default function QueuePage() {
     else setSelected(new Set(claims.map((c) => String(c._id))))
   }
 
+  function handleSort(field: string) {
+    setFilters((f) => {
+      if (f.sortBy !== field) return { ...f, sortBy: field, sortOrder: 'desc', page: 1 }
+      if (f.sortOrder === 'desc') return { ...f, sortOrder: 'asc', page: 1 }
+      return { ...f, sortBy: '', sortOrder: 'desc', page: 1 }
+    })
+  }
+
+  function SortIcon({ field }: { field: string }) {
+    const active = filters.sortBy === field
+    const asc = active && filters.sortOrder === 'asc'
+    const desc = active && filters.sortOrder === 'desc'
+    return (
+      <span className="inline-flex flex-col gap-[1px] ml-1.5 align-middle">
+        <svg width="8" height="5" viewBox="0 0 8 5" fill="none">
+          <path d="M4 0L8 5H0L4 0Z" fill={asc ? '#0f2d5c' : '#d1d5db'} />
+        </svg>
+        <svg width="8" height="5" viewBox="0 0 8 5" fill="none">
+          <path d="M4 5L0 0H8L4 5Z" fill={desc ? '#0f2d5c' : '#d1d5db'} />
+        </svg>
+      </span>
+    )
+  }
+
+  const columns: { label: string; field?: string }[] = [
+    { label: 'Claim #', field: 'claimNumber' },
+    { label: 'Claimant' },
+    { label: 'Type', field: 'type' },
+    { label: 'Status', field: 'status' },
+    { label: 'Filed', field: 'createdAt' },
+    { label: 'Amount', field: 'estimatedAmount' },
+    { label: 'Assigned To' },
+    { label: 'Actions' },
+  ]
+
   return (
     <div className="space-y-6 max-w-7xl">
       <div className="flex items-center justify-between">
@@ -153,19 +188,6 @@ export default function QueuePage() {
               <option key={t} value={t}>{t}</option>
             ))}
           </select>
-          <select
-            value={`${filters.sortBy}:${filters.sortOrder}`}
-            onChange={(e) => {
-              const [sortBy, sortOrder] = e.target.value.split(':')
-              setFilters((f) => ({ ...f, sortBy, sortOrder }))
-            }}
-            className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30"
-          >
-            <option value="createdAt:desc">Newest First</option>
-            <option value="createdAt:asc">Oldest First</option>
-            <option value="estimatedAmount:desc">Amount High→Low</option>
-            <option value="estimatedAmount:asc">Amount Low→High</option>
-          </select>
         </div>
 
         <div className="overflow-x-auto">
@@ -180,9 +202,19 @@ export default function QueuePage() {
                     className="rounded border-gray-300 text-primary"
                   />
                 </th>
-                {['Claim #', 'Claimant', 'Type', 'Status', 'Filed', 'Amount', 'Assigned To', 'Actions'].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {h}
+                {columns.map(({ label, field }) => (
+                  <th key={label} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {field ? (
+                      <button
+                        onClick={() => handleSort(field)}
+                        className="inline-flex items-center gap-0 hover:text-gray-900 transition-colors select-none"
+                      >
+                        {label}
+                        <SortIcon field={field} />
+                      </button>
+                    ) : (
+                      label
+                    )}
                   </th>
                 ))}
               </tr>
