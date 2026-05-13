@@ -177,27 +177,80 @@ export default function ClaimReviewPage({ params }: { params: { claimId: string 
   const nextOptions = NEXT_STATUSES[claim.status] ?? []
 
   return (
-    <div className="max-w-6xl space-y-6">
+    <div className="w-full space-y-6">
+      {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-gray-500">
         <Link href="/adjuster/queue" className="hover:text-primary transition-colors">Claim Queue</Link>
-        <span>/</span>
+        <svg className="w-3.5 h-3.5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
         <span className="text-gray-800 font-medium">{claim.claimNumber}</span>
       </div>
 
-      <div className="flex items-start justify-between flex-wrap gap-4">
-        <div>
-          <h1 className="text-2xl font-heading font-bold text-gray-900">{claim.claimNumber}</h1>
-          <div className="flex items-center gap-3 mt-2">
-            <ClaimTypeIcon type={claim.type} />
-            <ClaimStatusBadge status={claim.status} />
+      {/* Hero banner */}
+      <div className="rounded-xl bg-gradient-to-br from-primary to-primary/75 p-6 text-white">
+        <div className="flex items-start justify-between gap-6 flex-wrap">
+          {/* Left: identity */}
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <div>
+              <h1 className="text-2xl font-heading font-bold text-white leading-tight">{claim.claimNumber}</h1>
+              <div className="flex items-center gap-2.5 mt-2">
+                <ClaimTypeIcon type={claim.type} />
+                <ClaimStatusBadge status={claim.status} />
+              </div>
+            </div>
+          </div>
+
+          {/* Right: financials */}
+          <div className="text-right">
+            <p className="text-xs text-white/60 uppercase tracking-wide font-medium">Estimated Amount</p>
+            <p className="text-3xl font-bold text-white mt-0.5">{formatCurrency(claim.estimatedAmount)}</p>
+            {claim.approvedAmount != null && (
+              <div className="flex items-center gap-1.5 mt-1.5 justify-end">
+                <svg className="w-4 h-4 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                </svg>
+                <span className="text-sm font-semibold text-green-300">
+                  Approved {formatCurrency(claim.approvedAmount)}
+                </span>
+              </div>
+            )}
           </div>
         </div>
-        <div className="text-right">
-          <p className="text-sm text-gray-500">Estimated</p>
-          <p className="text-2xl font-bold text-gray-900">{formatCurrency(claim.estimatedAmount)}</p>
-          {claim.approvedAmount != null && (
-            <p className="text-sm text-success font-medium">Approved: {formatCurrency(claim.approvedAmount)}</p>
-          )}
+
+        {/* Metadata strip */}
+        <div className="mt-5 pt-4 border-t border-white/10 flex items-center gap-6 flex-wrap">
+          <div className="flex items-center gap-2">
+            <svg className="w-4 h-4 text-white/50 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            <span className="text-sm text-white/70">{claim.claimantId.name}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <svg className="w-4 h-4 text-white/50 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span className="text-sm text-white/70">Filed {formatDate(claim.createdAt)}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <svg className="w-4 h-4 text-white/50 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="text-sm text-white/70">Incident {formatDate(claim.incidentDate)}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <svg className="w-4 h-4 text-white/50 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            <span className="text-sm text-white/70">
+              {claim.assignedAdjusterId ? claim.assignedAdjusterId.name : <span className="text-white/40 italic">Unassigned</span>}
+            </span>
+          </div>
         </div>
       </div>
 
