@@ -116,7 +116,7 @@ export default function ClaimsPage() {
   const isFiltered = !!(filters.status || filters.type)
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -160,8 +160,8 @@ export default function ClaimsPage() {
 
         {/* Claim list */}
         {loading ? (
-          <div className="p-4 space-y-3">
-            {[...Array(5)].map((_, i) => <ClaimCardSkeleton key={i} />)}
+          <div className="p-4 grid grid-cols-1 lg:grid-cols-2 gap-3">
+            {[...Array(6)].map((_, i) => <ClaimCardSkeleton key={i} />)}
           </div>
         ) : claims.length === 0 ? (
           <div className="py-16 flex flex-col items-center text-center gap-3">
@@ -194,7 +194,7 @@ export default function ClaimsPage() {
             </div>
           </div>
         ) : (
-          <div className="p-4 space-y-3">
+          <div className="p-4 grid grid-cols-1 lg:grid-cols-2 gap-3">
             {claims.map((claim) => (
               <ClaimCard key={String(claim._id)} claim={claim} />
             ))}
