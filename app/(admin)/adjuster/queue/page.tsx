@@ -76,7 +76,7 @@ export default function QueuePage() {
     type: "",
     search: "",
     page: 1,
-    limit: 25,
+    limit: 10,
     sortBy: "",
     sortOrder: "desc",
   });
@@ -178,6 +178,13 @@ export default function QueuePage() {
       if (f.sortOrder === "desc") return { ...f, sortOrder: "asc", page: 1 };
       return { ...f, sortBy: "", sortOrder: "desc", page: 1 };
     });
+  }
+
+  function getPageNumbers(current: number, total: number): (number | '…')[] {
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+    if (current <= 4) return [1, 2, 3, 4, 5, '…', total]
+    if (current >= total - 3) return [1, '…', total - 4, total - 3, total - 2, total - 1, total]
+    return [1, '…', current - 1, current, current + 1, '…', total]
   }
 
   function SortIcon({ field }: { field: string }) {
@@ -539,29 +546,72 @@ export default function QueuePage() {
           </table>
         </div>
 
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-            <p className="text-sm text-gray-500">
-              Page {filters.page} of {totalPages}
+        {!loading && total > 0 && (
+          <div className="flex items-center justify-between px-5 py-4 border-t border-gray-100 gap-4">
+            <p className="text-sm text-gray-500 shrink-0">
+              Showing{' '}
+              <span className="font-semibold text-gray-800">
+                {(filters.page - 1) * filters.limit + 1}
+              </span>
+              {' – '}
+              <span className="font-semibold text-gray-800">
+                {Math.min(filters.page * filters.limit, total)}
+              </span>
+              {' of '}
+              <span className="font-semibold text-gray-800">{total}</span>
+              {' '}claim{total !== 1 ? 's' : ''}
             </p>
-            <div className="flex gap-2">
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={filters.page <= 1}
-                onClick={() => setFilters((f) => ({ ...f, page: f.page - 1 }))}
-              >
-                Previous
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={filters.page >= totalPages}
-                onClick={() => setFilters((f) => ({ ...f, page: f.page + 1 }))}
-              >
-                Next
-              </Button>
-            </div>
+
+            {totalPages > 1 && (
+              <div className="flex items-center gap-1">
+                {/* Prev */}
+                <button
+                  disabled={filters.page <= 1}
+                  onClick={() => setFilters((f) => ({ ...f, page: f.page - 1 }))}
+                  className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-800 hover:border-gray-300 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+
+                {/* Page numbers */}
+                {getPageNumbers(filters.page, totalPages).map((p, i) =>
+                  p === '…' ? (
+                    <span
+                      key={`ellipsis-${i}`}
+                      className="w-9 h-9 flex items-center justify-center text-sm text-gray-400 select-none"
+                    >
+                      …
+                    </span>
+                  ) : (
+                    <button
+                      key={p}
+                      onClick={() => setFilters((f) => ({ ...f, page: p as number }))}
+                      className={[
+                        'w-9 h-9 flex items-center justify-center rounded-lg text-sm font-medium transition-all',
+                        p === filters.page
+                          ? 'bg-primary text-white shadow-sm shadow-primary/30 scale-105'
+                          : 'border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-900',
+                      ].join(' ')}
+                    >
+                      {p}
+                    </button>
+                  )
+                )}
+
+                {/* Next */}
+                <button
+                  disabled={filters.page >= totalPages}
+                  onClick={() => setFilters((f) => ({ ...f, page: f.page + 1 }))}
+                  className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-800 hover:border-gray-300 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            )}
           </div>
         )}
       </Card>
