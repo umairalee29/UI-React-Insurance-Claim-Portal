@@ -263,7 +263,7 @@ export default function ClaimReviewPage({ params }: { params: { claimId: string 
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={[
-                    'px-6 py-3 text-sm font-medium capitalize transition-colors',
+                    'px-6 py-4 text-sm font-medium capitalize transition-colors',
                     activeTab === tab
                       ? 'text-primary border-b-2 border-primary'
                       : 'text-gray-500 hover:text-gray-700',
@@ -351,6 +351,27 @@ export default function ClaimReviewPage({ params }: { params: { claimId: string 
           {nextOptions.length > 0 && (
             <Card title="Update Status">
               <div className="px-6 py-4 space-y-4">
+                {/* From → To transition strip */}
+                <div className="bg-gray-50 rounded-xl px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-gray-400 font-medium mb-1">From</p>
+                      <ClaimStatusBadge status={claim.status} />
+                    </div>
+                    <svg className="w-5 h-5 text-gray-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                    <div className="flex-1 min-w-0 text-right">
+                      <p className="text-xs text-gray-400 font-medium mb-1">To</p>
+                      {newStatus
+                        ? <ClaimStatusBadge status={newStatus as import('@/types').ClaimStatus} />
+                        : <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border-2 border-dashed border-gray-200 text-gray-300">Select...</span>
+                      }
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-2.5">Updated {formatDate(claim.updatedAt)}</p>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Select Next Action</label>
                   <div className="space-y-2">
@@ -435,20 +456,20 @@ export default function ClaimReviewPage({ params }: { params: { claimId: string 
 
           {nextOptions.length === 0 && (
             <Card>
-              <div className="px-6 py-4 text-center">
-                <p className="text-sm text-gray-400">This claim is in a final state and cannot be updated further.</p>
+              <div className="px-6 py-5 flex flex-col items-center text-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                  <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <div>
+                  <ClaimStatusBadge status={claim.status} />
+                  <p className="text-sm text-gray-500 mt-2">This claim is in a final state and cannot be updated further.</p>
+                  <p className="text-xs text-gray-400 mt-1">Last updated {formatDate(claim.updatedAt)}</p>
+                </div>
               </div>
             </Card>
           )}
-
-          <Card title="Current Status">
-            <div className="px-6 py-4">
-              <ClaimStatusBadge status={claim.status} />
-              <p className="text-xs text-gray-400 mt-2">
-                Last updated: {formatDate(claim.updatedAt)}
-              </p>
-            </div>
-          </Card>
         </div>
       </div>
     </div>
