@@ -21,10 +21,13 @@ export const useClaimsStore = create<ClaimsState>((set, get) => ({
   totalPages: 0,
   loading: false,
   error: null,
-  filters: { page: 1, limit: 25 },
+  filters: { page: 1, limit: 10 },
 
   setFilters: (filters) => {
-    set((state) => ({ filters: { ...state.filters, ...filters, page: 1 } }))
+    const isPageChange = 'page' in filters && Object.keys(filters).length === 1
+    set((state) => ({
+      filters: { ...state.filters, ...filters, ...(isPageChange ? {} : { page: 1 }) },
+    }))
     get().fetchClaims()
   },
 

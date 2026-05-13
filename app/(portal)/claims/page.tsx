@@ -47,6 +47,13 @@ const STATUS_PILLS: { value: string; label: string; active: string; inactive: st
   { value: 'closed',       label: 'Closed',       active: 'bg-purple-500 text-white border-purple-500', inactive: 'border-purple-200 text-purple-600 hover:bg-purple-50', inactiveCount: 'bg-purple-100 text-purple-600' },
 ]
 
+function getPageNumbers(current: number, total: number): (number | '…')[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+  if (current <= 4) return [1, 2, 3, 4, 5, '…', total]
+  if (current >= total - 3) return [1, '…', total - 4, total - 3, total - 2, total - 1, total]
+  return [1, '…', current - 1, current, current + 1, '…', total]
+}
+
 function ClaimCard({ claim }: { claim: IClaim }) {
   const typeCfg = TYPE_CONFIG[claim.type] ?? TYPE_CONFIG.auto
   const borderCls = STATUS_BORDER[claim.status] ?? 'border-l-gray-200'
@@ -316,27 +323,64 @@ export default function ClaimsPage() {
         )}
 
         {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-            <p className="text-sm text-gray-500">Page {filters.page} of {totalPages}</p>
-            <div className="flex gap-2">
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={(filters.page ?? 1) <= 1}
-                onClick={() => setFilters({ page: (filters.page ?? 1) - 1 })}
-              >
-                Previous
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={(filters.page ?? 1) >= totalPages}
-                onClick={() => setFilters({ page: (filters.page ?? 1) + 1 })}
-              >
-                Next
-              </Button>
-            </div>
+        {!loading && total > 0 && (
+          <div className="flex items-center justify-between px-5 py-4 border-t border-gray-100 gap-4">
+            <p className="text-sm text-gray-500 shrink-0">
+              Showing{' '}
+              <span className="font-semibold text-gray-800">
+                {((filters.page ?? 1) - 1) * (filters.limit ?? 10) + 1}
+              </span>
+              {' – '}
+              <span className="font-semibold text-gray-800">
+                {Math.min((filters.page ?? 1) * (filters.limit ?? 10), total)}
+              </span>
+              {' of '}
+              <span className="font-semibold text-gray-800">{total}</span>
+              {' '}claim{total !== 1 ? 's' : ''}
+            </p>
+
+            {totalPages > 1 && (
+              <div className="flex items-center gap-1">
+                <button
+                  disabled={(filters.page ?? 1) <= 1}
+                  onClick={() => setFilters({ page: (filters.page ?? 1) - 1 })}
+                  className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-800 hover:border-gray-300 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+
+                {getPageNumbers(filters.page ?? 1, totalPages).map((p, i) =>
+                  p === '…' ? (
+                    <span key={`ellipsis-${i}`} className="w-9 h-9 flex items-center justify-center text-sm text-gray-400 select-none">…</span>
+                  ) : (
+                    <button
+                      key={p}
+                      onClick={() => setFilters({ page: p as number })}
+                      className={[
+                        'w-9 h-9 flex items-center justify-center rounded-lg text-sm font-medium transition-all',
+                        p === (filters.page ?? 1)
+                          ? 'bg-primary text-white shadow-sm shadow-primary/30 scale-105'
+                          : 'border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-900',
+                      ].join(' ')}
+                    >
+                      {p}
+                    </button>
+                  )
+                )}
+
+                <button
+                  disabled={(filters.page ?? 1) >= totalPages}
+                  onClick={() => setFilters({ page: (filters.page ?? 1) + 1 })}
+                  className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-800 hover:border-gray-300 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            )}
           </div>
         )}
       </Card>
