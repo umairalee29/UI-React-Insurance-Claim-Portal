@@ -1,10 +1,17 @@
 'use client'
 
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, type TooltipProps } from 'recharts'
 
 interface Props {
   byStatus: Record<string, number>
   total: number
+}
+
+interface DataEntry {
+  status: string
+  name: string
+  value: number
+  color: string
 }
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
@@ -16,12 +23,29 @@ const STATUS_META: Record<string, { label: string; color: string }> = {
   closed:       { label: 'Closed',       color: '#6b7280' },
 }
 
+function CustomTooltip({ active, payload }: TooltipProps<number, string> & { total?: number }) {
+  if (!active || !payload?.length) return null
+  const entry = payload[0].payload as DataEntry
+  const pct = entry.value && payload[0]?.payload?.total
+    ? ((entry.value / payload[0].payload.total) * 100).toFixed(1)
+    : null
+  return (
+    <div className="bg-white border border-gray-200 rounded-xl shadow-lg px-4 py-2.5 flex items-center gap-2.5">
+      <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: entry.color }} />
+      <span className="text-sm font-medium text-gray-700">{entry.name}</span>
+      <span className="text-sm font-bold text-gray-900 tabular-nums">{entry.value}</span>
+      {pct && <span className="text-xs text-gray-400 tabular-nums">{pct}%</span>}
+    </div>
+  )
+}
+
 export function StatusDonutChart({ byStatus, total }: Props) {
   const data = Object.entries(byStatus).map(([status, count]) => ({
     status,
     name: STATUS_META[status]?.label ?? status,
     value: count,
     color: STATUS_META[status]?.color ?? '#9ca3af',
+    total,
   }))
 
   return (
@@ -43,17 +67,7 @@ export function StatusDonutChart({ byStatus, total }: Props) {
                 <Cell key={entry.status} fill={entry.color} />
               ))}
             </Pie>
-            <Tooltip
-              formatter={(value: number, name: string) => [value, name]}
-              contentStyle={{
-                borderRadius: '10px',
-                border: '1px solid #e5e7eb',
-                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.05)',
-                fontSize: '13px',
-                padding: '8px 12px',
-              }}
-              itemStyle={{ color: '#374151' }}
-            />
+            <Tooltip content={<CustomTooltip />} />
           </PieChart>
         </ResponsiveContainer>
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
