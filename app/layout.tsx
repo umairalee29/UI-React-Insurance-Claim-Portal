@@ -22,6 +22,11 @@ export const metadata: Metadata = {
     default: 'ClaimFlow — Insurance Claims Portal',
   },
   description: 'Manage your insurance claims efficiently with ClaimFlow',
+  icons: {
+    icon: [{ url: '/icon.svg', type: 'image/svg+xml' }],
+    shortcut: '/icon.svg',
+    apple: '/icon.svg',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
