@@ -154,6 +154,11 @@ export function ClaimDrawer({ claimId, onClose, currentUserId, onAssignMe }: Cla
             className="fixed top-20 inset-x-0 bottom-0 z-40 bg-black/40 backdrop-blur-[2px]"
             onClick={onClose}
           />
+          <div
+            key="header-overlay"
+            className="fixed top-0 inset-x-0 h-20 z-40"
+            onClick={onClose}
+          />
 
           {/* Panel */}
           <motion.div
