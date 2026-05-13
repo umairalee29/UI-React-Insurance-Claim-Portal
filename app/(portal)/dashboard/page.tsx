@@ -217,39 +217,6 @@ export default async function DashboardPage() {
               {heroSummary}
             </p>
 
-            {/* Inline mini stats */}
-            <div className="flex items-center gap-5 pt-1">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-white/40" />
-                <span className="text-sm text-white/70">
-                  {stats.total} Total
-                </span>
-              </div>
-              {stats.pending > 0 && (
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-300" />
-                  <span className="text-sm text-white/70">
-                    {stats.pending} Pending
-                  </span>
-                </div>
-              )}
-              {stats.approved > 0 && (
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-green-300" />
-                  <span className="text-sm text-white/70">
-                    {stats.approved} Approved
-                  </span>
-                </div>
-              )}
-              {stats.rejected > 0 && (
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-red-300" />
-                  <span className="text-sm text-white/70">
-                    {stats.rejected} Rejected
-                  </span>
-                </div>
-              )}
-            </div>
           </div>
 
           {/* Right: CTA */}
