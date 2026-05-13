@@ -26,6 +26,23 @@ interface StatCard {
   icon: React.ReactNode
 }
 
+function getGreeting() {
+  const hour = new Date().getHours()
+  if (hour >= 5 && hour < 12) return 'Good morning'
+  if (hour >= 12 && hour < 17) return 'Good afternoon'
+  if (hour >= 17 && hour < 21) return 'Good evening'
+  return 'Welcome back'
+}
+
+function getHeroSummary(stats: { total: number; pending: number; approved: number; rejected: number }) {
+  if (stats.total === 0) return "You haven't filed any claims yet. Get started below."
+  if (stats.pending > 0)
+    return `You have ${stats.pending} claim${stats.pending > 1 ? 's' : ''} currently awaiting review.`
+  if (stats.approved > 0 && stats.pending === 0)
+    return `Great news — ${stats.approved} of your claim${stats.approved > 1 ? 's have' : ' has'} been approved.`
+  return `You have ${stats.total} claim${stats.total > 1 ? 's' : ''} on file. Everything is up to date.`
+}
+
 export default async function DashboardPage() {
   const session = await auth()
   await connectDB()
@@ -93,13 +110,66 @@ export default async function DashboardPage() {
     },
   ]
 
+  const greeting = getGreeting()
+  const heroSummary = getHeroSummary(stats)
+  const firstName = session!.user.name?.split(' ')[0] ?? 'there'
+
   return (
     <div className="space-y-6 max-w-7xl">
-      <div>
-        <h1 className="text-2xl font-heading font-bold text-gray-900">
-          Welcome back, {session!.user.name?.split(' ')[0]}
-        </h1>
-        <p className="text-gray-500 text-sm mt-1">Here&apos;s an overview of your insurance claims.</p>
+      {/* Hero banner */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-primary/75 px-8 py-8 text-white">
+        {/* Decorative circles */}
+        <div className="pointer-events-none absolute -top-10 -right-10 w-56 h-56 rounded-full bg-white/5" />
+        <div className="pointer-events-none absolute -bottom-14 -right-4 w-72 h-72 rounded-full bg-white/5" />
+        <div className="pointer-events-none absolute top-6 right-40 w-20 h-20 rounded-full bg-white/5" />
+
+        <div className="relative flex items-center justify-between gap-6 flex-wrap">
+          {/* Left: greeting + summary */}
+          <div className="space-y-3">
+            <div>
+              <p className="text-sm font-medium text-white/60 uppercase tracking-widest">{greeting}</p>
+              <h1 className="text-3xl font-heading font-bold text-white mt-1">{firstName} 👋</h1>
+            </div>
+            <p className="text-white/75 text-sm max-w-sm leading-relaxed">{heroSummary}</p>
+
+            {/* Inline mini stats */}
+            <div className="flex items-center gap-5 pt-1">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-white/40" />
+                <span className="text-xs text-white/60">{stats.total} Total</span>
+              </div>
+              {stats.pending > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-amber-300" />
+                  <span className="text-xs text-white/60">{stats.pending} Pending</span>
+                </div>
+              )}
+              {stats.approved > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-green-300" />
+                  <span className="text-xs text-white/60">{stats.approved} Approved</span>
+                </div>
+              )}
+              {stats.rejected > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-red-300" />
+                  <span className="text-xs text-white/60">{stats.rejected} Rejected</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right: CTA */}
+          <Link
+            href="/claims/new"
+            className="inline-flex items-center gap-2.5 px-6 py-3.5 bg-white text-primary rounded-xl font-semibold text-sm shadow-lg shadow-black/10 hover:bg-white/90 transition-colors shrink-0"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+            </svg>
+            File a New Claim
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -200,17 +270,6 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <div className="flex justify-center pt-2">
-        <Link
-          href="/claims/new"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-medium hover:bg-primary-700 transition-colors shadow-lg shadow-primary/20"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          File a New Claim
-        </Link>
-      </div>
     </div>
   )
 }
