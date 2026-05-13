@@ -1,6 +1,7 @@
 'use client'
 
 import { signOut } from 'next-auth/react'
+import { usePathname } from 'next/navigation'
 import { UserRole } from '@/types'
 
 interface HeaderProps {
@@ -21,50 +22,73 @@ const ROLE_COLOR: Record<UserRole, string> = {
   manager: 'bg-purple-100 text-purple-700',
 }
 
+const PAGE_TITLES: { pattern: RegExp; title: string }[] = [
+  { pattern: /^\/adjuster\/queue/, title: 'Claim Queue' },
+  { pattern: /^\/adjuster\/stats/, title: 'Statistics' },
+  { pattern: /^\/adjuster\/[^/]+$/, title: 'Claim Review' },
+  { pattern: /^\/claims\/new/, title: 'New Claim' },
+  { pattern: /^\/claims\/[^/]+$/, title: 'Claim Detail' },
+  { pattern: /^\/claims/, title: 'My Claims' },
+  { pattern: /^\/dashboard/, title: 'Dashboard' },
+  { pattern: /^\/documents/, title: 'Documents' },
+]
+
+function getPageTitle(pathname: string): string {
+  for (const { pattern, title } of PAGE_TITLES) {
+    if (pattern.test(pathname)) return title
+  }
+  return 'ClaimFlow'
+}
+
 function getInitials(name?: string | null): string {
   if (!name) return 'U'
-  return name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
+  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 }
 
 export function Header({ userName, userEmail, role }: HeaderProps) {
+  const pathname = usePathname()
+  const pageTitle = getPageTitle(pathname)
+
   return (
-    <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-6 sticky top-0 z-20">
+    <header className="h-20 bg-white border-b border-gray-100 flex items-center justify-between px-6 sticky top-0 z-20">
+      {/* Left — page title */}
       <div className="flex items-center gap-3">
         <div className="lg:hidden">
           <span className="text-primary font-heading font-bold text-lg">ClaimFlow</span>
         </div>
+        <h1 className="hidden lg:block text-xl font-bold font-heading text-gray-900 tracking-tight">
+          {pageTitle}
+        </h1>
       </div>
 
-      <div className="flex items-center gap-4">
+      {/* Right — role badge, user info, avatar, sign-out */}
+      <div className="flex items-center gap-5">
         {role && (
-          <span className={`hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${ROLE_COLOR[role]}`}>
+          <span className={`hidden sm:inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${ROLE_COLOR[role]}`}>
             {ROLE_LABEL[role]}
           </span>
         )}
 
-        <div className="flex items-center gap-3">
-          <div className="text-right hidden sm:block">
-            <p className="text-sm font-medium text-gray-800 leading-tight">{userName}</p>
-            <p className="text-xs text-gray-400">{userEmail}</p>
+        <div className="hidden sm:flex items-center gap-3">
+          <div className="text-right">
+            <p className="text-base font-semibold text-gray-800 leading-tight">{userName}</p>
+            <p className="text-sm text-gray-400 leading-tight mt-0.5">{userEmail}</p>
           </div>
-          <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center">
-            <span className="text-white text-xs font-semibold">{getInitials(userName)}</span>
+          <div className="w-11 h-11 rounded-full bg-primary flex items-center justify-center shrink-0 ring-2 ring-primary/10">
+            <span className="text-white text-sm font-bold">{getInitials(userName)}</span>
           </div>
         </div>
 
+        <div className="w-px h-8 bg-gray-100 hidden sm:block" />
+
         <button
           onClick={() => signOut({ callbackUrl: '/login' })}
-          className="text-gray-400 hover:text-gray-600 transition-colors"
-          title="Sign out"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-colors"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
           </svg>
+          <span className="hidden sm:inline">Sign Out</span>
         </button>
       </div>
     </header>

@@ -38,7 +38,7 @@ export function PortalSidebar() {
 
   return (
     <aside className="fixed inset-y-0 left-0 w-64 bg-primary flex flex-col z-30 hidden lg:flex">
-      <div className="px-6 py-5 border-b border-white/10">
+      <div className="h-20 px-6 flex items-center border-b border-white/10">
         <Link href="/dashboard" className="flex items-center gap-2">
           <svg viewBox="0 0 32 32" className="w-9 h-9 shrink-0" fill="none">
             <path
