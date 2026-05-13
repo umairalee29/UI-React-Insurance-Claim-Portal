@@ -4,7 +4,6 @@ import { connectDB } from "@/lib/db";
 import Claim from "@/models/Claim";
 import Link from "next/link";
 import { ClaimStatusBadge } from "@/components/claims/ClaimStatusBadge";
-import { StatusTimeline } from "@/components/claims/StatusTimeline";
 import { Card } from "@/components/ui/Card";
 import { IClaim, IStatusHistoryEntry } from "@/types";
 
@@ -33,6 +32,15 @@ function relativeDate(d: Date | string) {
   if (diff < 7) return `${diff} days ago`
   if (diff < 30) return `${Math.floor(diff / 7)} week${Math.floor(diff / 7) > 1 ? 's' : ''} ago`
   return formatDate(d)
+}
+
+const STATUS_FEED: Record<string, { label: string; bar: string; dot: string; textColor: string }> = {
+  draft:        { label: 'Saved as Draft',   bar: 'bg-gray-300',    dot: 'bg-gray-400',    textColor: 'text-gray-500' },
+  submitted:    { label: 'Claim Submitted',  bar: 'bg-blue-400',    dot: 'bg-blue-500',    textColor: 'text-blue-600' },
+  under_review: { label: 'Under Review',     bar: 'bg-amber-400',   dot: 'bg-amber-500',   textColor: 'text-amber-600' },
+  approved:     { label: 'Claim Approved',   bar: 'bg-green-400',   dot: 'bg-green-500',   textColor: 'text-green-600' },
+  rejected:     { label: 'Claim Rejected',   bar: 'bg-red-400',     dot: 'bg-red-500',     textColor: 'text-red-600' },
+  closed:       { label: 'Claim Closed',     bar: 'bg-purple-400',  dot: 'bg-purple-500',  textColor: 'text-purple-600' },
 }
 
 const TYPE_CONFIG: Record<string, { label: string; iconBg: string; iconColor: string; iconPath: string }> = {
@@ -358,22 +366,57 @@ export default async function DashboardPage() {
 
         <div>
           <Card title="Recent Activity">
-            <div className="px-6 py-4">
-              {allHistory.length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-4">
-                  No activity yet
-                </p>
-              ) : (
-                <StatusTimeline
-                  history={allHistory.map((h) => ({
-                    status: h.status,
-                    changedBy: String(h.changedBy),
-                    changedAt: h.changedAt,
-                    note: `${h.claimNumber}: ${h.note}`,
-                  }))}
-                />
-              )}
-            </div>
+            {allHistory.length === 0 ? (
+              <div className="px-6 py-14 flex flex-col items-center text-center gap-3">
+                <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center">
+                  <svg className="w-7 h-7 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-500">No activity yet</p>
+                  <p className="text-xs text-gray-400 mt-0.5">Status updates will appear here.</p>
+                </div>
+              </div>
+            ) : (
+              <div className="px-6 py-4 divide-y divide-gray-100">
+                {allHistory.map((entry, idx) => {
+                  const cfg = STATUS_FEED[entry.status] ?? STATUS_FEED.draft
+                  return (
+                    <div key={idx} className="flex gap-3 py-3 first:pt-0 last:pb-0">
+                      {/* Colored left bar */}
+                      <div className={`w-1 rounded-full shrink-0 my-0.5 ${cfg.bar}`} />
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            {/* Status label */}
+                            <p className={`text-xs font-semibold uppercase tracking-wide ${cfg.textColor}`}>
+                              {cfg.label}
+                            </p>
+                            {/* Claim number link */}
+                            <Link
+                              href={`/claims/${entry.claimId}`}
+                              className="text-sm font-medium text-gray-800 hover:text-primary transition-colors"
+                            >
+                              {entry.claimNumber}
+                            </Link>
+                            {/* Note */}
+                            {entry.note && (
+                              <p className="text-xs text-gray-400 mt-0.5 truncate">{entry.note}</p>
+                            )}
+                          </div>
+                          {/* Timestamp */}
+                          <time className="text-xs text-gray-400 shrink-0 whitespace-nowrap mt-0.5">
+                            {relativeDate(entry.changedAt)}
+                          </time>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </Card>
         </div>
       </div>
