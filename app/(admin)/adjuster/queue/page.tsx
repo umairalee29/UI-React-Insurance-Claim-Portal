@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
-import { IClaim, ClaimStatus, ClaimType, IUser } from '@/types'
+import { IClaim, ClaimType, IUser } from '@/types'
 import { ClaimStatusBadge } from '@/components/claims/ClaimStatusBadge'
-import { ClaimTypeIcon } from '@/components/claims/ClaimTypeIcon'
+import { ClaimTypeIcon, TYPE_CONFIG } from '@/components/claims/ClaimTypeIcon'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { SkeletonRow } from '@/components/ui/Skeleton'
@@ -30,6 +30,19 @@ export default function QueuePage() {
   const [totalPages, setTotalPages] = useState(0)
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<Set<string>>(new Set())
+
+  const [typeOpen, setTypeOpen] = useState(false)
+  const typeRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (typeRef.current && !typeRef.current.contains(e.target as Node)) {
+        setTypeOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const [filters, setFilters] = useState({
     status: '',
@@ -178,16 +191,46 @@ export default function QueuePage() {
               <option key={s} value={s}>{s.replace('_', ' ')}</option>
             ))}
           </select>
-          <select
-            value={filters.type}
-            onChange={(e) => updateFilter('type', e.target.value)}
-            className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30"
-          >
-            <option value="">All Types</option>
-            {['auto','home','health','life','travel'].map((t) => (
-              <option key={t} value={t}>{t}</option>
-            ))}
-          </select>
+          <div ref={typeRef} className="relative">
+            <button
+              onClick={() => setTypeOpen((o) => !o)}
+              className="flex items-center gap-2 text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors min-w-[130px]"
+            >
+              {filters.type ? (
+                <ClaimTypeIcon type={filters.type as ClaimType} />
+              ) : (
+                <span className="text-gray-500">All Types</span>
+              )}
+              <svg className={`ml-auto w-3.5 h-3.5 text-gray-400 transition-transform ${typeOpen ? 'rotate-180' : ''}`} viewBox="0 0 12 12" fill="none">
+                <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+
+            {typeOpen && (
+              <div className="absolute z-20 mt-1.5 left-0 bg-white border border-gray-100 rounded-xl shadow-lg py-1 min-w-[150px]">
+                <button
+                  onClick={() => { updateFilter('type', ''); setTypeOpen(false) }}
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 transition-colors ${!filters.type ? 'bg-gray-50' : ''}`}
+                >
+                  <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-md bg-gray-100 text-gray-500">
+                    All Types
+                  </span>
+                </button>
+                {(Object.entries(TYPE_CONFIG) as [ClaimType, typeof TYPE_CONFIG[ClaimType]][]).map(([key, cfg]) => (
+                  <button
+                    key={key}
+                    onClick={() => { updateFilter('type', key); setTypeOpen(false) }}
+                    className={`w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 transition-colors ${filters.type === key ? 'bg-gray-50' : ''}`}
+                  >
+                    <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-md ${cfg.bg} ${cfg.text}`}>
+                      <span>{cfg.icon}</span>
+                      {cfg.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="overflow-x-auto">
