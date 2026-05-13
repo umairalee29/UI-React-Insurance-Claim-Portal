@@ -299,7 +299,7 @@ export default function ClaimReviewPage({ params }: { params: { claimId: string 
             <Card title="Update Status">
               <div className="px-6 py-4 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">New Status</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Select Next Action</label>
                   <div className="space-y-2">
                     {nextOptions.map((s) => {
                       const cfg = STATUS_OPTIONS[s]
@@ -353,16 +353,28 @@ export default function ClaimReviewPage({ params }: { params: { claimId: string 
                   </div>
                 )}
 
-                <Textarea
-                  label="Note (required)"
-                  placeholder="Add a note explaining this status change..."
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  rows={3}
-                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Adjuster Note <span className="text-red-500">*</span>
+                  </label>
+                  <Textarea
+                    id="adjuster-note"
+                    placeholder="Add a note explaining this status change..."
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    rows={3}
+                  />
+                </div>
 
                 <Button onClick={updateStatus} loading={updating} className="w-full">
-                  Update Status
+                  {{
+                    approved: 'Approve Claim',
+                    rejected: 'Reject Claim',
+                    under_review: 'Move to Review',
+                    closed: 'Close Claim',
+                    submitted: 'Submit Claim',
+                    draft: 'Save as Draft',
+                  }[newStatus] ?? 'Update Status'}
                 </Button>
               </div>
             </Card>
