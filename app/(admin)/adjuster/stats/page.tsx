@@ -54,28 +54,96 @@ export default async function StatsPage() {
     auto: '🚗 Auto', home: '🏠 Home', health: '❤️ Health', life: '🛡️ Life', travel: '✈️ Travel',
   }
 
+  const kpiCards = [
+    {
+      label: 'Total Claims',
+      value: String(total),
+      iconBg: 'bg-blue-50',
+      iconColor: 'text-blue-600',
+      borderColor: 'border-t-blue-500',
+      icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />,
+    },
+    {
+      label: 'This Month',
+      value: String(thisMonth),
+      iconBg: 'bg-violet-50',
+      iconColor: 'text-violet-600',
+      borderColor: 'border-t-violet-500',
+      icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />,
+    },
+    {
+      label: 'Approved',
+      value: String(byStatus['approved'] ?? 0),
+      iconBg: 'bg-green-50',
+      iconColor: 'text-green-600',
+      borderColor: 'border-t-green-500',
+      icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />,
+    },
+    {
+      label: 'Total Approved',
+      value: formatCurrency(totalApproved),
+      iconBg: 'bg-emerald-50',
+      iconColor: 'text-emerald-600',
+      borderColor: 'border-t-emerald-500',
+      icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />,
+    },
+    {
+      label: 'Avg. Processing',
+      value: `${avgProcessingDays} days`,
+      iconBg: 'bg-orange-50',
+      iconColor: 'text-orange-600',
+      borderColor: 'border-t-orange-500',
+      icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />,
+    },
+    {
+      label: 'Pending Review',
+      value: String(byStatus['submitted'] ?? 0),
+      iconBg: 'bg-amber-50',
+      iconColor: 'text-amber-600',
+      borderColor: 'border-t-amber-500',
+      icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />,
+    },
+    {
+      label: 'Under Review',
+      value: String(byStatus['under_review'] ?? 0),
+      iconBg: 'bg-sky-50',
+      iconColor: 'text-sky-600',
+      borderColor: 'border-t-sky-500',
+      icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />,
+    },
+    {
+      label: 'Rejected',
+      value: String(byStatus['rejected'] ?? 0),
+      iconBg: 'bg-red-50',
+      iconColor: 'text-red-600',
+      borderColor: 'border-t-red-500',
+      icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />,
+    },
+  ]
+
   return (
-    <div className="max-w-5xl space-y-6">
+    <div className="w-full space-y-6">
       <div>
         <h1 className="text-2xl font-heading font-bold text-gray-900">Statistics</h1>
         <p className="text-sm text-gray-500 mt-1">Overview of all claims in the system</p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { label: 'Total Claims', value: String(total) },
-          { label: 'This Month', value: String(thisMonth) },
-          { label: 'Approved', value: String(byStatus['approved'] ?? 0) },
-          { label: 'Total Approved $', value: formatCurrency(totalApproved) },
-          { label: 'Avg. Processing', value: `${avgProcessingDays} days` },
-          { label: 'Pending Review', value: String(byStatus['submitted'] ?? 0) },
-          { label: 'Under Review', value: String(byStatus['under_review'] ?? 0) },
-          { label: 'Rejected', value: String(byStatus['rejected'] ?? 0) },
-        ].map((stat) => (
-          <Card key={stat.label} className="p-5">
-            <p className="text-sm text-gray-500">{stat.label}</p>
-            <p className="text-xl font-bold text-gray-900 mt-1">{stat.value}</p>
-          </Card>
+        {kpiCards.map((card) => (
+          <div
+            key={card.label}
+            className={`bg-white rounded-xl border border-gray-100 border-t-2 ${card.borderColor} shadow-sm p-5 flex flex-col gap-4`}
+          >
+            <div className={`w-10 h-10 rounded-lg ${card.iconBg} flex items-center justify-center shrink-0`}>
+              <svg className={`w-5 h-5 ${card.iconColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {card.icon}
+              </svg>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">{card.label}</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{card.value}</p>
+            </div>
+          </div>
         ))}
       </div>
 
