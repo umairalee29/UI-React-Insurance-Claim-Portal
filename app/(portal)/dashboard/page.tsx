@@ -89,7 +89,7 @@ function getHeroSummary(stats: {
     return "You haven't filed any claims yet. Get started below.";
   if (stats.pending > 0)
     return `You have ${stats.pending} claim${stats.pending > 1 ? "s" : ""} currently awaiting review.`;
-  if (stats.approved > 0 && stats.pending === 0)
+  if (stats.approved > 0)
     return `Great news — ${stats.approved} of your claim${stats.approved > 1 ? "s have" : " has"} been approved.`;
   return `You have ${stats.total} claim${stats.total > 1 ? "s" : ""} on file. Everything is up to date.`;
 }
