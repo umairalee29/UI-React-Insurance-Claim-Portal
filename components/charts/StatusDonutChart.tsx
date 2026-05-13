@@ -41,7 +41,7 @@ export function StatusDonutChart({ byStatus, total }: Props) {
               strokeWidth={0}
             />
             <Tooltip
-              wrapperStyle={{ outline: 'none' }}
+              wrapperStyle={{ outline: 'none', zIndex: 50 }}
               content={({ active, payload }) => {
                 if (!active || !payload?.length) return null
                 const entry = payload[0].payload as { name: string; value: number; color: string }
