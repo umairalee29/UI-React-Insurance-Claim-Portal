@@ -40,11 +40,29 @@ export function PortalSidebar() {
     <aside className="fixed inset-y-0 left-0 w-64 bg-primary flex flex-col z-30 hidden lg:flex">
       <div className="px-6 py-5 border-b border-white/10">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
-            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-            </svg>
-          </div>
+          <svg viewBox="0 0 32 32" className="w-9 h-9 shrink-0" fill="none">
+            <path
+              d="M16 3.5L5 8v9.5c0 6.8 5.2 11.2 11 13.2 5.8-2 11-6.4 11-13.2V8z"
+              fill="rgba(0,0,0,0.2)"
+              transform="translate(0.5,1)"
+            />
+            <path
+              d="M16 2L4 7v10.5c0 7 5.5 11.5 12 13.5 6.5-2 12-6.5 12-13.5V7z"
+              fill="rgba(255,255,255,0.18)"
+            />
+            <path
+              d="M16 2L4 7v10.5c0 7 5.5 11.5 12 13.5 6.5-2 12-6.5 12-13.5V7z"
+              stroke="rgba(255,255,255,0.45)"
+              strokeWidth="1.5"
+            />
+            <path
+              d="M10.5 16.5l3.5 3.5 7.5-8"
+              stroke="white"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
           <span className="text-white font-heading font-bold text-lg">ClaimFlow</span>
         </Link>
       </div>
