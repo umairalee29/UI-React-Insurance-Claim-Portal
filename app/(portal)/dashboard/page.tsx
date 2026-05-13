@@ -34,6 +34,7 @@ interface StatCard {
   iconBg: string;
   iconColor: string;
   borderColor: string;
+  barColor: string;
   iconPath: string;
 }
 
@@ -106,6 +107,7 @@ export default async function DashboardPage() {
       iconBg: 'bg-blue-50',
       iconColor: 'text-blue-600',
       borderColor: 'border-t-blue-500',
+      barColor: 'bg-blue-500',
       iconPath: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
     },
     {
@@ -117,6 +119,7 @@ export default async function DashboardPage() {
       iconBg: 'bg-amber-50',
       iconColor: 'text-amber-600',
       borderColor: 'border-t-amber-500',
+      barColor: 'bg-amber-500',
       iconPath: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
     },
     {
@@ -128,6 +131,7 @@ export default async function DashboardPage() {
       iconBg: 'bg-green-50',
       iconColor: 'text-green-600',
       borderColor: 'border-t-green-500',
+      barColor: 'bg-green-500',
       iconPath: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
     },
     {
@@ -139,6 +143,7 @@ export default async function DashboardPage() {
       iconBg: 'bg-red-50',
       iconColor: 'text-red-600',
       borderColor: 'border-t-red-500',
+      barColor: 'bg-red-500',
       iconPath: 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z',
     },
   ];
@@ -230,23 +235,43 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {statCards.map((card) => (
-          <div
-            key={card.label}
-            className={`bg-white rounded-xl border border-gray-100 border-t-4 ${card.borderColor} shadow-sm p-5 flex flex-col gap-4`}
-          >
-            <div className={`w-10 h-10 rounded-xl ${card.iconBg} flex items-center justify-center shrink-0`}>
-              <svg className={`w-5 h-5 ${card.iconColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d={card.iconPath} />
-              </svg>
+        {statCards.map((card) => {
+          const pct = stats.total > 0 ? Math.round((card.value / stats.total) * 100) : 0
+          return (
+            <div
+              key={card.label}
+              className={`bg-white rounded-xl border border-gray-100 border-t-4 ${card.borderColor} shadow-sm p-5 flex flex-col justify-between gap-4`}
+            >
+              {/* Top row: text left, icon right */}
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">{card.label}</p>
+                  <p className="text-3xl font-bold text-gray-900 mt-1.5">{card.value}</p>
+                  <p className="text-xs text-gray-400 mt-1.5 leading-snug">{card.sub}</p>
+                </div>
+                <div className={`w-10 h-10 rounded-xl ${card.iconBg} flex items-center justify-center shrink-0`}>
+                  <svg className={`w-5 h-5 ${card.iconColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d={card.iconPath} />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Bottom: progress bar */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-400">% of total claims</span>
+                  <span className={`text-xs font-semibold ${card.iconColor}`}>{pct}%</span>
+                </div>
+                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className={`h-1.5 ${card.barColor} rounded-full transition-all duration-500`}
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+              </div>
             </div>
-            <div>
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">{card.label}</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{card.value}</p>
-              <p className="text-xs text-gray-400 mt-1.5 leading-snug">{card.sub}</p>
-            </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
