@@ -41,13 +41,13 @@ function getDateGroup(d: Date | string): string {
   return 'Earlier'
 }
 
-const STATUS_FEED: Record<string, { label: string; bar: string; dot: string; textColor: string }> = {
-  draft:        { label: 'Saved as Draft',   bar: 'bg-gray-300',    dot: 'bg-gray-400',    textColor: 'text-gray-500' },
-  submitted:    { label: 'Claim Submitted',  bar: 'bg-blue-400',    dot: 'bg-blue-500',    textColor: 'text-blue-600' },
-  under_review: { label: 'Under Review',     bar: 'bg-amber-400',   dot: 'bg-amber-500',   textColor: 'text-amber-600' },
-  approved:     { label: 'Claim Approved',   bar: 'bg-green-400',   dot: 'bg-green-500',   textColor: 'text-green-600' },
-  rejected:     { label: 'Claim Rejected',   bar: 'bg-red-400',     dot: 'bg-red-500',     textColor: 'text-red-600' },
-  closed:       { label: 'Claim Closed',     bar: 'bg-purple-400',  dot: 'bg-purple-500',  textColor: 'text-purple-600' },
+const STATUS_FEED: Record<string, { label: string; bar: string; textColor: string }> = {
+  draft:        { label: 'Saved as Draft',   bar: 'bg-gray-300',   textColor: 'text-gray-500'  },
+  submitted:    { label: 'Claim Submitted',  bar: 'bg-blue-400',   textColor: 'text-blue-600'  },
+  under_review: { label: 'Under Review',     bar: 'bg-amber-400',  textColor: 'text-amber-600' },
+  approved:     { label: 'Claim Approved',   bar: 'bg-green-400',  textColor: 'text-green-600' },
+  rejected:     { label: 'Claim Rejected',   bar: 'bg-red-400',    textColor: 'text-red-600'   },
+  closed:       { label: 'Claim Closed',     bar: 'bg-purple-400', textColor: 'text-purple-600'},
 }
 
 const TYPE_CONFIG: Record<string, { label: string; iconBg: string; iconColor: string; iconPath: string }> = {
