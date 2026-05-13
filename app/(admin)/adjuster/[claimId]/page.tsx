@@ -18,6 +18,14 @@ interface PopulatedClaim extends Omit<IClaim, 'claimantId' | 'assignedAdjusterId
   documents: IDocument[]
 }
 
+interface AuditEntry {
+  _id: string
+  action: string
+  performedBy: { name: string; email: string }
+  metadata: Record<string, unknown>
+  createdAt: string
+}
+
 const NEXT_STATUSES: Record<string, string[]> = {
   submitted: ['under_review', 'rejected'],
   under_review: ['approved', 'rejected', 'closed'],
@@ -108,6 +116,8 @@ export default function ClaimReviewPage({ params }: { params: { claimId: string 
   const [claim, setClaim] = useState<PopulatedClaim | null>(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'details' | 'documents' | 'audit'>('details')
+  const [auditLogs, setAuditLogs] = useState<AuditEntry[]>([])
+  const [auditLoading, setAuditLoading] = useState(false)
 
   const [newStatus, setNewStatus] = useState('')
   const [note, setNote] = useState('')
@@ -126,6 +136,15 @@ export default function ClaimReviewPage({ params }: { params: { claimId: string 
     }
     load()
   }, [params.claimId])
+
+  useEffect(() => {
+    if (activeTab !== 'audit' || auditLogs.length > 0) return
+    setAuditLoading(true)
+    fetch(`/api/claims/${params.claimId}/audit`)
+      .then((r) => r.json())
+      .then((json) => { if (json.success) setAuditLogs(json.data) })
+      .finally(() => setAuditLoading(false))
+  }, [activeTab, params.claimId, auditLogs.length])
 
   async function updateStatus() {
     if (!newStatus || !note.trim()) {
@@ -365,9 +384,57 @@ export default function ClaimReviewPage({ params }: { params: { claimId: string 
 
             {activeTab === 'audit' && (
               <div className="px-6 py-4">
-                <p className="text-sm text-gray-400 text-center py-4">
-                  Audit logs are tracked server-side. Check your MongoDB AuditLog collection for entries with targetId: {String(claim._id)}.
-                </p>
+                {auditLoading ? (
+                  <div className="space-y-3 py-2">
+                    {[...Array(4)].map((_, i) => (
+                      <div key={i} className="flex gap-3">
+                        <div className="w-8 h-8 rounded-full bg-gray-100 animate-pulse shrink-0" />
+                        <div className="flex-1 space-y-1.5 pt-1">
+                          <div className="h-3 w-48 bg-gray-100 rounded-full animate-pulse" />
+                          <div className="h-3 w-32 bg-gray-100 rounded-full animate-pulse" />
+                        </div>
+                        <div className="h-3 w-24 bg-gray-100 rounded-full animate-pulse mt-1" />
+                      </div>
+                    ))}
+                  </div>
+                ) : auditLogs.length === 0 ? (
+                  <p className="text-sm text-gray-400 text-center py-6">No audit history found for this claim.</p>
+                ) : (
+                  <ol className="relative border-l border-gray-100 ml-3 space-y-5 py-2">
+                    {auditLogs.map((log) => (
+                      <li key={log._id} className="ml-6">
+                        <span className="absolute -left-3 flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 ring-4 ring-white">
+                          <svg className="w-3 h-3 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </span>
+                        <div className="flex items-start justify-between gap-4">
+                          <div>
+                            <p className="text-sm font-medium text-gray-800">{log.action}</p>
+                            <p className="text-xs text-gray-400 mt-0.5">
+                              by <span className="font-medium text-gray-600">{log.performedBy.name}</span>
+                              {log.performedBy.email && <span className="text-gray-400"> · {log.performedBy.email}</span>}
+                            </p>
+                            {log.metadata && Object.keys(log.metadata).length > 0 && (
+                              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                                {Object.entries(log.metadata).map(([k, v]) => (
+                                  <span key={k} className="inline-flex items-center gap-1 text-xs bg-gray-100 text-gray-600 rounded-md px-2 py-0.5">
+                                    <span className="text-gray-400">{k}:</span> {String(v)}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          <time className="text-xs text-gray-400 shrink-0 mt-0.5">
+                            {new Date(log.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            {' '}
+                            {new Date(log.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                          </time>
+                        </div>
+                      </li>
+                    ))}
+                  </ol>
+                )}
               </div>
             )}
           </Card>
