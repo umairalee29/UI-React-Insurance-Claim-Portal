@@ -208,15 +208,15 @@ export default function QueuePage() {
   ];
 
   return (
-    <div className="space-y-0 max-w-7xl">
-      <div className="flex items-center justify-between">
-        <div>
+    <div className="max-w-7xl">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
           <h1 className="text-2xl font-heading font-bold text-gray-900">
             Claim Queue
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            {total} claim{total !== 1 ? "s" : ""} total
-          </p>
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary">
+            {total} {total !== 1 ? 'claims' : 'claim'}
+          </span>
         </div>
         {selected.size > 0 && (
           <Button size="sm" onClick={() => setBulkConfirmOpen(true)}>

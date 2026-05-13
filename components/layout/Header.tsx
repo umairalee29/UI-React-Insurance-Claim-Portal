@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { signOut } from 'next-auth/react'
-import { usePathname } from 'next/navigation'
 import { UserRole } from '@/types'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
@@ -25,32 +24,12 @@ const ROLE_COLOR: Record<UserRole, string> = {
   manager: 'bg-purple-100 text-purple-700',
 }
 
-const PAGE_TITLES: { pattern: RegExp; title: string }[] = [
-  { pattern: /^\/adjuster\/queue/, title: 'Claim Queue' },
-  { pattern: /^\/adjuster\/stats/, title: 'Statistics' },
-  { pattern: /^\/adjuster\/[^/]+$/, title: 'Claim Review' },
-  { pattern: /^\/claims\/new/, title: 'New Claim' },
-  { pattern: /^\/claims\/[^/]+$/, title: 'Claim Detail' },
-  { pattern: /^\/claims/, title: 'My Claims' },
-  { pattern: /^\/dashboard/, title: 'Dashboard' },
-  { pattern: /^\/documents/, title: 'Documents' },
-]
-
-function getPageTitle(pathname: string): string {
-  for (const { pattern, title } of PAGE_TITLES) {
-    if (pattern.test(pathname)) return title
-  }
-  return 'ClaimFlow'
-}
-
 function getInitials(name?: string | null): string {
   if (!name) return 'U'
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 }
 
 export function Header({ userName, userEmail, role }: HeaderProps) {
-  const pathname = usePathname()
-  const pageTitle = getPageTitle(pathname)
   const [showSignOut, setShowSignOut] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
 
@@ -61,18 +40,7 @@ export function Header({ userName, userEmail, role }: HeaderProps) {
 
   return (
     <>
-      <header className="h-20 bg-white border-b border-gray-100 flex items-center justify-between px-6 sticky top-0 z-20">
-        {/* Left — page title */}
-        <div className="flex items-center gap-3">
-          <div className="lg:hidden">
-            <span className="text-primary font-heading font-bold text-lg">ClaimFlow</span>
-          </div>
-          <h1 className="hidden lg:block text-xl font-bold font-heading text-gray-900 tracking-tight">
-            {pageTitle}
-          </h1>
-        </div>
-
-        {/* Right — role badge, user info, avatar, sign-out */}
+      <header className="h-20 bg-white border-b border-gray-100 flex items-center justify-end px-6 sticky top-0 z-20">
         <div className="flex items-center gap-5">
           {role && (
             <span className={`hidden sm:inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${ROLE_COLOR[role]}`}>
