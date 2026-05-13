@@ -37,14 +37,14 @@ const STATUS_BORDER: Record<string, string> = {
   closed:       'border-l-purple-500',
 }
 
-const STATUS_PILLS: { value: string; label: string; active: string; inactive: string }[] = [
-  { value: '',             label: 'All',          active: 'bg-gray-800 text-white border-gray-800',     inactive: 'border-gray-200 text-gray-500 hover:bg-gray-50'        },
-  { value: 'draft',        label: 'Draft',        active: 'bg-gray-500 text-white border-gray-500',     inactive: 'border-gray-200 text-gray-500 hover:bg-gray-50'        },
-  { value: 'submitted',    label: 'Submitted',    active: 'bg-blue-500 text-white border-blue-500',     inactive: 'border-blue-200 text-blue-600 hover:bg-blue-50'        },
-  { value: 'under_review', label: 'Under Review', active: 'bg-amber-500 text-white border-amber-500',   inactive: 'border-amber-200 text-amber-600 hover:bg-amber-50'     },
-  { value: 'approved',     label: 'Approved',     active: 'bg-green-500 text-white border-green-500',   inactive: 'border-green-200 text-green-600 hover:bg-green-50'     },
-  { value: 'rejected',     label: 'Rejected',     active: 'bg-red-500 text-white border-red-500',       inactive: 'border-red-200 text-red-600 hover:bg-red-50'           },
-  { value: 'closed',       label: 'Closed',       active: 'bg-purple-500 text-white border-purple-500', inactive: 'border-purple-200 text-purple-600 hover:bg-purple-50'  },
+const STATUS_PILLS: { value: string; label: string; active: string; inactive: string; inactiveCount: string }[] = [
+  { value: '',             label: 'All',          active: 'bg-gray-800 text-white border-gray-800',     inactive: 'border-gray-200 text-gray-500 hover:bg-gray-50',       inactiveCount: 'bg-gray-100 text-gray-500'    },
+  { value: 'draft',        label: 'Draft',        active: 'bg-gray-500 text-white border-gray-500',     inactive: 'border-gray-200 text-gray-500 hover:bg-gray-50',       inactiveCount: 'bg-gray-100 text-gray-500'    },
+  { value: 'submitted',    label: 'Submitted',    active: 'bg-blue-500 text-white border-blue-500',     inactive: 'border-blue-200 text-blue-600 hover:bg-blue-50',       inactiveCount: 'bg-blue-100 text-blue-600'    },
+  { value: 'under_review', label: 'Under Review', active: 'bg-amber-500 text-white border-amber-500',   inactive: 'border-amber-200 text-amber-600 hover:bg-amber-50',    inactiveCount: 'bg-amber-100 text-amber-600'  },
+  { value: 'approved',     label: 'Approved',     active: 'bg-green-500 text-white border-green-500',   inactive: 'border-green-200 text-green-600 hover:bg-green-50',    inactiveCount: 'bg-green-100 text-green-600'  },
+  { value: 'rejected',     label: 'Rejected',     active: 'bg-red-500 text-white border-red-500',       inactive: 'border-red-200 text-red-600 hover:bg-red-50',          inactiveCount: 'bg-red-100 text-red-600'      },
+  { value: 'closed',       label: 'Closed',       active: 'bg-purple-500 text-white border-purple-500', inactive: 'border-purple-200 text-purple-600 hover:bg-purple-50', inactiveCount: 'bg-purple-100 text-purple-600' },
 ]
 
 function ClaimCard({ claim }: { claim: IClaim }) {
@@ -120,11 +120,29 @@ export default function ClaimsPage() {
   const { claims, loading, total, totalPages, filters, setFilters, fetchClaims } = useClaimsStore()
   const [searchInput, setSearchInput] = useState(filters.search ?? '')
   const [typeOpen, setTypeOpen] = useState(false)
+  const [statusCounts, setStatusCounts] = useState<Record<string, number>>({})
   const typeRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     fetchClaims()
   }, [fetchClaims])
+
+  useEffect(() => {
+    const params = new URLSearchParams({ limit: '1000' })
+    if (filters.type) params.set('type', filters.type)
+    if (filters.search) params.set('search', filters.search)
+    fetch(`/api/claims?${params}`)
+      .then((r) => r.json())
+      .then((json) => {
+        if (!json.success) return
+        const counts: Record<string, number> = {}
+        json.data.forEach((c: IClaim) => {
+          counts[c.status] = (counts[c.status] ?? 0) + 1
+        })
+        setStatusCounts(counts)
+      })
+      .catch(() => {})
+  }, [filters.type, filters.search])
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -236,6 +254,9 @@ export default function ClaimsPage() {
           <div className="flex gap-1.5 overflow-x-auto pb-0.5">
             {STATUS_PILLS.map((pill) => {
               const isActive = (filters.status ?? '') === pill.value
+              const count = pill.value === ''
+                ? Object.values(statusCounts).reduce((a, b) => a + b, 0)
+                : (statusCounts[pill.value] ?? 0)
               return (
                 <button
                   key={pill.value}
@@ -243,6 +264,11 @@ export default function ClaimsPage() {
                   className={`shrink-0 text-xs font-medium px-3 py-1.5 rounded-full border transition-all ${isActive ? pill.active : pill.inactive}`}
                 >
                   {pill.label}
+                  {Object.keys(statusCounts).length > 0 && (
+                    <span className={`ml-1.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${isActive ? 'bg-white/25' : pill.inactiveCount}`}>
+                      {count}
+                    </span>
+                  )}
                 </button>
               )
             })}
