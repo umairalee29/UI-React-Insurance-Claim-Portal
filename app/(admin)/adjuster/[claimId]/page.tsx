@@ -107,7 +107,7 @@ function formatSize(b: number) {
 export default function ClaimReviewPage({ params }: { params: { claimId: string } }) {
   const [claim, setClaim] = useState<PopulatedClaim | null>(null)
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'details' | 'audit'>('details')
+  const [activeTab, setActiveTab] = useState<'details' | 'documents' | 'audit'>('details')
 
   const [newStatus, setNewStatus] = useState('')
   const [note, setNote] = useState('')
@@ -258,18 +258,27 @@ export default function ClaimReviewPage({ params }: { params: { claimId: string 
         <div className="lg:col-span-2 space-y-6">
           <Card>
             <div className="flex border-b border-gray-100">
-              {(['details', 'audit'] as const).map((tab) => (
+              {([
+                { key: 'details' as const, label: 'Claim Details', count: undefined },
+                { key: 'documents' as const, label: 'Documents', count: claim.documents.length },
+                { key: 'audit' as const, label: 'Audit History', count: undefined },
+              ]).map(({ key, label, count }) => (
                 <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
+                  key={key}
+                  onClick={() => setActiveTab(key)}
                   className={[
-                    'px-6 py-4 text-sm font-medium capitalize transition-colors',
-                    activeTab === tab
+                    'flex items-center gap-2 px-6 py-4 text-sm font-medium transition-colors',
+                    activeTab === key
                       ? 'text-primary border-b-2 border-primary'
                       : 'text-gray-500 hover:text-gray-700',
                   ].join(' ')}
                 >
-                  {tab === 'audit' ? 'Audit History' : 'Claim Details'}
+                  {label}
+                  {count !== undefined && count > 0 && (
+                    <span className={`text-xs rounded-full px-1.5 py-0.5 font-semibold ${activeTab === key ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-gray-500'}`}>
+                      {count}
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
@@ -302,33 +311,56 @@ export default function ClaimReviewPage({ params }: { params: { claimId: string 
                   </div>
                 </div>
 
-                {claim.documents.length > 0 && (
-                  <div>
-                    <p className="text-xs text-gray-400 uppercase mb-2">Documents ({claim.documents.length})</p>
-                    <div className="space-y-2">
-                      {claim.documents.map((doc) => (
-                        <div key={String(doc._id)} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                          <div className="w-9 h-9 flex items-center justify-center bg-white border border-gray-100 rounded text-xs font-bold text-gray-500 uppercase">
-                            {doc.fileType === 'application/pdf' ? 'PDF' : 'IMG'}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-800 truncate">{doc.fileName}</p>
-                            <p className="text-xs text-gray-400">{formatSize(doc.fileSize)}</p>
-                          </div>
-                          <a
-                            href={`/api/documents/${doc._id}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs text-primary font-medium hover:underline"
-                          >
-                            View
-                          </a>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
+            )}
+
+            {activeTab === 'documents' && (
+              claim.documents.length === 0 ? (
+                <div className="px-6 py-10 flex flex-col items-center text-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <p className="text-sm text-gray-400">No documents attached to this claim.</p>
+                </div>
+              ) : (
+                <div className="px-6 py-4 space-y-2">
+                  {claim.documents.map((doc) => {
+                    const isPdf = doc.fileType === 'application/pdf'
+                    return (
+                      <div key={String(doc._id)} className="flex items-center gap-3 p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors group">
+                        <div className={`w-10 h-10 flex items-center justify-center rounded-lg shrink-0 ${isPdf ? 'bg-red-100' : 'bg-blue-100'}`}>
+                          {isPdf ? (
+                            <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                            </svg>
+                          ) : (
+                            <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-800 truncate">{doc.fileName}</p>
+                          <p className="text-xs text-gray-400 mt-0.5">{isPdf ? 'PDF Document' : 'Image'} · {formatSize(doc.fileSize)}</p>
+                        </div>
+                        <a
+                          href={`/api/documents/${doc._id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1.5 text-xs font-medium text-primary opacity-0 group-hover:opacity-100 transition-opacity hover:underline shrink-0"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                          </svg>
+                          Open
+                        </a>
+                      </div>
+                    )
+                  })}
+                </div>
+              )
             )}
 
             {activeTab === 'audit' && (
