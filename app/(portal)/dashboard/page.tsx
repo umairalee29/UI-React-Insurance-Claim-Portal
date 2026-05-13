@@ -34,6 +34,13 @@ function relativeDate(d: Date | string) {
   return formatDate(d)
 }
 
+function getDateGroup(d: Date | string): string {
+  const diff = Math.floor((Date.now() - new Date(d).getTime()) / (1000 * 60 * 60 * 24))
+  if (diff === 0) return 'Today'
+  if (diff === 1) return 'Yesterday'
+  return 'Earlier'
+}
+
 const STATUS_FEED: Record<string, { label: string; bar: string; dot: string; textColor: string }> = {
   draft:        { label: 'Saved as Draft',   bar: 'bg-gray-300',    dot: 'bg-gray-400',    textColor: 'text-gray-500' },
   submitted:    { label: 'Claim Submitted',  bar: 'bg-blue-400',    dot: 'bg-blue-500',    textColor: 'text-blue-600' },
@@ -380,38 +387,49 @@ export default async function DashboardPage() {
               </div>
             ) : (
               <>
-              <div className="px-6 py-4 divide-y divide-gray-100">
-                {allHistory.map((entry, idx) => {
-                  const cfg = STATUS_FEED[entry.status] ?? STATUS_FEED.draft
+              <div className="px-6 py-4 space-y-5">
+                {(['Today', 'Yesterday', 'Earlier'] as const).map((group) => {
+                  const entries = allHistory.filter((e) => getDateGroup(e.changedAt) === group)
+                  if (entries.length === 0) return null
                   return (
-                    <div key={idx} className="flex gap-3 py-3 first:pt-0 last:pb-0">
-                      {/* Colored left bar */}
-                      <div className={`w-1 rounded-full shrink-0 my-0.5 ${cfg.bar}`} />
+                    <div key={group}>
+                      {/* Group header */}
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest">{group}</span>
+                        <div className="flex-1 h-px bg-gray-100" />
+                      </div>
 
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0">
-                            {/* Status label */}
-                            <p className={`text-xs font-semibold uppercase tracking-wide ${cfg.textColor}`}>
-                              {cfg.label}
-                            </p>
-                            {/* Claim number link */}
-                            <Link
-                              href={`/claims/${entry.claimId}`}
-                              className="text-sm font-medium text-gray-800 hover:text-primary transition-colors"
-                            >
-                              {entry.claimNumber}
-                            </Link>
-                            {/* Note */}
-                            {entry.note && (
-                              <p className="text-xs text-gray-400 mt-0.5 truncate">{entry.note}</p>
-                            )}
-                          </div>
-                          {/* Timestamp */}
-                          <time className="text-xs text-gray-400 shrink-0 whitespace-nowrap mt-0.5">
-                            {relativeDate(entry.changedAt)}
-                          </time>
-                        </div>
+                      {/* Entries */}
+                      <div className="space-y-1">
+                        {entries.map((entry, idx) => {
+                          const cfg = STATUS_FEED[entry.status] ?? STATUS_FEED.draft
+                          return (
+                            <div key={idx} className="flex gap-3 py-2">
+                              <div className={`w-1 rounded-full shrink-0 my-0.5 ${cfg.bar}`} />
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="min-w-0">
+                                    <p className={`text-xs font-semibold uppercase tracking-wide ${cfg.textColor}`}>
+                                      {cfg.label}
+                                    </p>
+                                    <Link
+                                      href={`/claims/${entry.claimId}`}
+                                      className="text-sm font-medium text-gray-800 hover:text-primary transition-colors"
+                                    >
+                                      {entry.claimNumber}
+                                    </Link>
+                                    {entry.note && (
+                                      <p className="text-xs text-gray-400 mt-0.5 truncate">{entry.note}</p>
+                                    )}
+                                  </div>
+                                  <time className="text-xs text-gray-400 shrink-0 whitespace-nowrap mt-0.5">
+                                    {relativeDate(entry.changedAt)}
+                                  </time>
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        })}
                       </div>
                     </div>
                   )
