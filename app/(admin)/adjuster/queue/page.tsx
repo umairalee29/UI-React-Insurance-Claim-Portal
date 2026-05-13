@@ -9,6 +9,7 @@ import { ClaimStatusBadge, STATUS_CONFIG } from '@/components/claims/ClaimStatus
 import { ClaimTypeIcon, TYPE_CONFIG } from '@/components/claims/ClaimTypeIcon'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { Modal } from '@/components/ui/Modal'
 import { SkeletonRow } from '@/components/ui/Skeleton'
 
 interface PopulatedClaim extends Omit<IClaim, 'claimantId' | 'assignedAdjusterId'> {
@@ -30,6 +31,8 @@ export default function QueuePage() {
   const [totalPages, setTotalPages] = useState(0)
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [pendingClaim, setPendingClaim] = useState<PopulatedClaim | null>(null)
+  const [assigning, setAssigning] = useState(false)
 
   const [typeOpen, setTypeOpen] = useState(false)
   const [statusOpen, setStatusOpen] = useState(false)
@@ -78,19 +81,25 @@ export default function QueuePage() {
     setFilters((f) => ({ ...f, [key]: value, page: 1 }))
   }
 
-  async function assignToMe(claimId: string) {
-    if (!session?.user?.id) return
-    const res = await fetch('/api/admin/assign', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ claimId, adjusterId: session.user.id }),
-    })
-    const json = await res.json()
-    if (json.success) {
-      toast.success('Claim assigned to you')
-      fetchQueue()
-    } else {
-      toast.error(json.error ?? 'Assignment failed')
+  async function confirmAssign() {
+    if (!session?.user?.id || !pendingClaim) return
+    setAssigning(true)
+    try {
+      const res = await fetch('/api/admin/assign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ claimId: String(pendingClaim._id), adjusterId: session.user.id }),
+      })
+      const json = await res.json()
+      if (json.success) {
+        toast.success(`${pendingClaim.claimNumber} assigned to you`)
+        setPendingClaim(null)
+        fetchQueue()
+      } else {
+        toast.error(json.error ?? 'Assignment failed')
+      }
+    } finally {
+      setAssigning(false)
     }
   }
 
@@ -105,7 +114,7 @@ export default function QueuePage() {
         })
       )
     )
-    toast.success(`Assigned ${selected.size} claim${selected.size !== 1 ? 's' : ''} to you`)
+    toast.success(`${selected.size} claim${selected.size !== 1 ? 's' : ''} assigned to you`)
     setSelected(new Set())
     fetchQueue()
   }
@@ -342,7 +351,7 @@ export default function QueuePage() {
 
                         {!claim.assignedAdjusterId ? (
                           <button
-                            onClick={() => assignToMe(String(claim._id))}
+                            onClick={() => setPendingClaim(claim)}
                             className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 hover:border-emerald-300 transition-all"
                           >
                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -391,6 +400,37 @@ export default function QueuePage() {
           </div>
         )}
       </Card>
+      <Modal
+        isOpen={!!pendingClaim}
+        onClose={() => !assigning && setPendingClaim(null)}
+        title="Confirm Assignment"
+        footer={
+          <>
+            <Button variant="secondary" size="md" disabled={assigning} onClick={() => setPendingClaim(null)}>
+              Cancel
+            </Button>
+            <Button variant="primary" size="md" loading={assigning} onClick={confirmAssign}>
+              Yes, Assign
+            </Button>
+          </>
+        }
+      >
+        <div className="flex flex-col items-center text-center gap-4 py-2">
+          <div className="w-14 h-14 rounded-full bg-emerald-50 flex items-center justify-center">
+            <svg className="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+          </div>
+          <div>
+            <h3 className="text-base font-semibold text-gray-900">Assign this claim to yourself?</h3>
+            <p className="mt-1.5 text-sm text-gray-500">
+              Claim{' '}
+              <span className="font-medium text-gray-700">{pendingClaim?.claimNumber}</span>{' '}
+              will be assigned to you and added to your queue.
+            </p>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }
