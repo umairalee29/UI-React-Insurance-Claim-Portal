@@ -129,12 +129,12 @@ export default function ClaimsPage() {
   const [typeOpen, setTypeOpen] = useState(false)
   const [statusCounts, setStatusCounts] = useState<Record<string, number>>({})
   const typeRef = useRef<HTMLDivElement>(null)
+  const hasMountedRef = useRef(false)
 
   useEffect(() => {
-    fetchClaims()
-  }, [fetchClaims])
+    const isMount = !hasMountedRef.current
+    if (isMount) { hasMountedRef.current = true; fetchClaims() }
 
-  useEffect(() => {
     const params = new URLSearchParams({ limit: '1000' })
     if (filters.type) params.set('type', filters.type)
     if (filters.search) params.set('search', filters.search)
@@ -149,7 +149,7 @@ export default function ClaimsPage() {
         setStatusCounts(counts)
       })
       .catch(() => {})
-  }, [filters.type, filters.search])
+  }, [filters.type, filters.search]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -180,7 +180,7 @@ export default function ClaimsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-heading font-bold text-gray-900">My Claims</h1>
-          <p className="text-sm text-gray-500 mt-1">{total} claim{total !== 1 ? 's' : ''} total</p>
+          <p className="text-sm text-gray-500 mt-1">Manage and track all your claims</p>
         </div>
         <Link href="/claims/new">
           <Button size="sm">
@@ -271,7 +271,7 @@ export default function ClaimsPage() {
                   className={`shrink-0 text-xs font-medium px-3 py-1.5 rounded-full border transition-all ${isActive ? pill.active : pill.inactive}`}
                 >
                   {pill.label}
-                  {Object.keys(statusCounts).length > 0 && (
+                  {count > 0 && (
                     <span className={`ml-1.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${isActive ? 'bg-white/25' : pill.inactiveCount}`}>
                       {count}
                     </span>
@@ -285,7 +285,7 @@ export default function ClaimsPage() {
         {/* Claim list */}
         {loading ? (
           <div className="p-4 grid grid-cols-1 lg:grid-cols-2 gap-3">
-            {[...Array(6)].map((_, i) => <ClaimCardSkeleton key={i} />)}
+            {[...Array(10)].map((_, i) => <ClaimCardSkeleton key={i} />)}
           </div>
         ) : claims.length === 0 ? (
           <div className="py-16 flex flex-col items-center text-center gap-3">
