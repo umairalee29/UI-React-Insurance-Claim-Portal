@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { signOut } from 'next-auth/react'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
+import { useSidebar } from '@/components/layout/SidebarContext'
 
 interface HeaderProps {
   userName?: string | null
@@ -16,6 +17,7 @@ function getInitials(name?: string | null): string {
 }
 
 export function Header({ userName, userEmail }: HeaderProps) {
+  const { open } = useSidebar()
   const [showSignOut, setShowSignOut] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
 
@@ -27,6 +29,16 @@ export function Header({ userName, userEmail }: HeaderProps) {
   return (
     <>
       <header className="h-20 bg-white border-b border-gray-100 flex items-center justify-end px-6 sticky top-0 z-20">
+        <button
+          onClick={open}
+          className="lg:hidden absolute left-6 flex items-center justify-center w-10 h-10 rounded-lg text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-colors"
+          aria-label="Open navigation"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+
         <div className="flex items-center gap-5">
           <div className="hidden sm:flex items-center gap-3">
             <div className="text-right">
