@@ -15,6 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" />
   <img alt="Nodemailer" src="https://img.shields.io/badge/Nodemailer-22B573?style=for-the-badge&logo=minutemailer&logoColor=white" />
   <img alt="bcrypt" src="https://img.shields.io/badge/bcrypt.js-F05032?style=for-the-badge&logo=letsencrypt&logoColor=white" />
+  <img alt="Recharts" src="https://img.shields.io/badge/Recharts-22B5BF?style=for-the-badge&logo=chartdotjs&logoColor=white" />
 </p>
 
 <br/>
@@ -37,6 +38,7 @@ A full-stack insurance claims management portal built with Next.js 14 App Router
 - **Forms**: React Hook Form + Zod
 - **State**: Zustand
 - **Animations**: Framer Motion
+- **Charts**: Recharts — interactive donut ring chart with animated segments and hover tooltips on the Statistics page
 
 ## Setup
 
@@ -106,6 +108,7 @@ Visit [http://localhost:3000](http://localhost:3000)
   /claims           ← ClaimStatusBadge, ClaimTypeIcon, StatusTimeline, ClaimsTable
   /forms            ← FileUploadZone, StepIndicator
   /layout           ← PortalSidebar, AdminSidebar, Header, ErrorBoundary
+  /charts           ← StatusDonutChart (Recharts, client component)
 /lib
   db.ts             ← MongoDB connection
   auth.ts           ← NextAuth config
