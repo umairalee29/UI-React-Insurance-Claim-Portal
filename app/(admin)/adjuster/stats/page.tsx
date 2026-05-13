@@ -46,12 +46,20 @@ export default async function StatsPage() {
         )
       : 0
 
-  const STATUS_LABELS: Record<string, string> = {
-    draft: 'Draft', submitted: 'Submitted', under_review: 'Under Review',
-    approved: 'Approved', rejected: 'Rejected', closed: 'Closed',
+  const STATUS_CONFIG_CHART: Record<string, { label: string; bar: string; bg: string; dot: string }> = {
+    draft:        { label: 'Draft',        bar: 'bg-gray-400',   bg: 'bg-gray-100',   dot: 'bg-gray-400' },
+    submitted:    { label: 'Submitted',    bar: 'bg-amber-400',  bg: 'bg-amber-100',  dot: 'bg-amber-400' },
+    under_review: { label: 'Under Review', bar: 'bg-sky-500',    bg: 'bg-sky-100',    dot: 'bg-sky-500' },
+    approved:     { label: 'Approved',     bar: 'bg-green-500',  bg: 'bg-green-100',  dot: 'bg-green-500' },
+    rejected:     { label: 'Rejected',     bar: 'bg-red-500',    bg: 'bg-red-100',    dot: 'bg-red-500' },
+    closed:       { label: 'Closed',       bar: 'bg-gray-500',   bg: 'bg-gray-200',   dot: 'bg-gray-500' },
   }
-  const TYPE_LABELS: Record<string, string> = {
-    auto: '🚗 Auto', home: '🏠 Home', health: '❤️ Health', life: '🛡️ Life', travel: '✈️ Travel',
+  const TYPE_CONFIG_CHART: Record<string, { label: string; bar: string; bg: string; dot: string }> = {
+    auto:   { label: '🚗 Auto',    bar: 'bg-blue-500',    bg: 'bg-blue-100',    dot: 'bg-blue-500' },
+    home:   { label: '🏠 Home',    bar: 'bg-violet-500',  bg: 'bg-violet-100',  dot: 'bg-violet-500' },
+    health: { label: '❤️ Health',  bar: 'bg-rose-500',    bg: 'bg-rose-100',    dot: 'bg-rose-500' },
+    life:   { label: '🛡️ Life',   bar: 'bg-emerald-500', bg: 'bg-emerald-100', dot: 'bg-emerald-500' },
+    travel: { label: '✈️ Travel',  bar: 'bg-orange-500',  bg: 'bg-orange-100',  dot: 'bg-orange-500' },
   }
 
   const kpiCards = [
@@ -149,36 +157,57 @@ export default async function StatsPage() {
 
       <div className="grid lg:grid-cols-2 gap-6">
         <Card title="Claims by Status">
-          <div className="px-6 py-4 space-y-3">
-            {Object.entries(byStatus).map(([status, count]) => (
-              <div key={status} className="flex items-center gap-3">
-                <span className="text-sm text-gray-600 w-28">{STATUS_LABELS[status] ?? status}</span>
-                <div className="flex-1 bg-gray-100 rounded-full h-2">
-                  <div
-                    className="bg-primary h-2 rounded-full"
-                    style={{ width: `${total > 0 ? (count / total) * 100 : 0}%` }}
-                  />
+          <div className="px-6 py-5 space-y-4">
+            {Object.entries(byStatus).map(([status, count]) => {
+              const cfg = STATUS_CONFIG_CHART[status] ?? { label: status, bar: 'bg-gray-400', bg: 'bg-gray-100', dot: 'bg-gray-400' }
+              const pct = total > 0 ? (count / total) * 100 : 0
+              return (
+                <div key={status} className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 w-32 shrink-0">
+                    <span className={`w-2 h-2 rounded-full shrink-0 ${cfg.dot}`} />
+                    <span className="text-sm text-gray-600 truncate">{cfg.label}</span>
+                  </div>
+                  <div className={`flex-1 ${cfg.bg} rounded-full h-2.5`}>
+                    <div
+                      className={`${cfg.bar} h-2.5 rounded-full transition-all`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <div className="flex items-center gap-1.5 w-16 justify-end shrink-0">
+                    <span className="text-sm font-semibold text-gray-800">{count}</span>
+                    <span className="text-xs text-gray-400">{pct.toFixed(0)}%</span>
+                  </div>
                 </div>
-                <span className="text-sm font-medium text-gray-900 w-8 text-right">{count}</span>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </Card>
 
-        <Card title="Claims by Type">
-          <div className="px-6 py-4 space-y-3">
-            {Object.entries(byType).map(([type, count]) => (
-              <div key={type} className="flex items-center gap-3">
-                <span className="text-sm text-gray-600 w-28">{TYPE_LABELS[type] ?? type}</span>
-                <div className="flex-1 bg-gray-100 rounded-full h-2">
-                  <div
-                    className="bg-primary h-2 rounded-full"
-                    style={{ width: `${total > 0 ? (count / total) * 100 : 0}%` }}
-                  />
+        <Card title="Claims by Type" className="flex flex-col">
+          <div className="flex-1 flex flex-col justify-between px-6 py-5">
+            {Object.entries(byType).map(([type, count]) => {
+              const cfg = TYPE_CONFIG_CHART[type] ?? { label: type, bar: 'bg-gray-400', bg: 'bg-gray-100', dot: 'bg-gray-400' }
+              const typeTotal = Object.values(byType).reduce((a, b) => a + b, 0)
+              const pct = typeTotal > 0 ? (count / typeTotal) * 100 : 0
+              return (
+                <div key={type} className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 w-32 shrink-0">
+                    <span className={`w-2 h-2 rounded-full shrink-0 ${cfg.dot}`} />
+                    <span className="text-sm text-gray-600 truncate">{cfg.label}</span>
+                  </div>
+                  <div className={`flex-1 ${cfg.bg} rounded-full h-2.5`}>
+                    <div
+                      className={`${cfg.bar} h-2.5 rounded-full transition-all`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <div className="flex items-center gap-1.5 w-16 justify-end shrink-0">
+                    <span className="text-sm font-semibold text-gray-800">{count}</span>
+                    <span className="text-xs text-gray-400">{pct.toFixed(0)}%</span>
+                  </div>
                 </div>
-                <span className="text-sm font-medium text-gray-900 w-8 text-right">{count}</span>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </Card>
       </div>
