@@ -63,7 +63,10 @@ export function PortalSidebar() {
               strokeLinejoin="round"
             />
           </svg>
-          <span className="text-white font-heading font-bold text-lg">ClaimFlow</span>
+          <div>
+            <span className="text-white font-heading font-bold text-lg">ClaimFlow</span>
+            <span className="block text-white/50 text-xs">Claimant</span>
+          </div>
         </Link>
       </div>
 

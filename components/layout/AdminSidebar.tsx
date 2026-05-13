@@ -65,7 +65,7 @@ export function AdminSidebar({ role }: AdminSidebarProps) {
           </svg>
           <div>
             <span className="text-white font-heading font-bold text-lg">ClaimFlow</span>
-            <span className="block text-white/50 text-xs capitalize">{role} Portal</span>
+            <span className="block text-white/50 text-xs capitalize">{role}</span>
           </div>
         </Link>
       </div>

@@ -2,26 +2,12 @@
 
 import { useState } from 'react'
 import { signOut } from 'next-auth/react'
-import { UserRole } from '@/types'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 
 interface HeaderProps {
   userName?: string | null
   userEmail?: string | null
-  role?: UserRole
-}
-
-const ROLE_LABEL: Record<UserRole, string> = {
-  claimant: 'Claimant',
-  adjuster: 'Adjuster',
-  manager: 'Manager',
-}
-
-const ROLE_COLOR: Record<UserRole, string> = {
-  claimant: 'bg-blue-100 text-blue-700',
-  adjuster: 'bg-amber-100 text-amber-700',
-  manager: 'bg-purple-100 text-purple-700',
 }
 
 function getInitials(name?: string | null): string {
@@ -29,7 +15,7 @@ function getInitials(name?: string | null): string {
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 }
 
-export function Header({ userName, userEmail, role }: HeaderProps) {
+export function Header({ userName, userEmail }: HeaderProps) {
   const [showSignOut, setShowSignOut] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
 
@@ -42,12 +28,6 @@ export function Header({ userName, userEmail, role }: HeaderProps) {
     <>
       <header className="h-20 bg-white border-b border-gray-100 flex items-center justify-end px-6 sticky top-0 z-20">
         <div className="flex items-center gap-5">
-          {role && (
-            <span className={`hidden sm:inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${ROLE_COLOR[role]}`}>
-              {ROLE_LABEL[role]}
-            </span>
-          )}
-
           <div className="hidden sm:flex items-center gap-3">
             <div className="text-right">
               <p className="text-base font-semibold text-gray-800 leading-tight">{userName}</p>

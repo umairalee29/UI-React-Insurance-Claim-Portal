@@ -15,7 +15,6 @@ export default async function PortalLayout({ children }: { children: React.React
         <Header
           userName={session.user.name}
           userEmail={session.user.email}
-          role={session.user.role}
         />
         <main className="flex-1 p-6">{children}</main>
       </div>

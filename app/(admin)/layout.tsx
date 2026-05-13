@@ -15,7 +15,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <Header
           userName={session.user.name}
           userEmail={session.user.email}
-          role={session.user.role}
         />
         <main className="flex-1 p-6">{children}</main>
       </div>
