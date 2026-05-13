@@ -339,8 +339,16 @@ export default async function DashboardPage() {
 
                       {/* Right: amount + arrow */}
                       <div className="text-right shrink-0">
-                        <p className="text-base font-bold text-gray-900">{formatCurrency(claim.estimatedAmount)}</p>
-                        <p className="text-xs text-gray-400 mt-0.5 group-hover:text-primary transition-colors">View details →</p>
+                        <p className="text-base font-bold text-gray-900">
+                          {formatCurrency(claim.status === 'approved' && claim.approvedAmount ? claim.approvedAmount : claim.estimatedAmount)}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {claim.status === 'approved' && claim.approvedAmount ? (
+                            <span className="text-green-500 font-medium">Approved amount</span>
+                          ) : (
+                            <span className="group-hover:text-primary transition-colors">View details →</span>
+                          )}
+                        </p>
                       </div>
                     </Link>
                   )
