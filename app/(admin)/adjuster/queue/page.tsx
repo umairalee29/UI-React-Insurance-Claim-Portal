@@ -34,6 +34,8 @@ export default function QueuePage() {
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [pendingClaim, setPendingClaim] = useState<{ _id: unknown; claimNumber: string } | null>(null)
   const [assigning, setAssigning] = useState(false)
+  const [bulkConfirmOpen, setBulkConfirmOpen] = useState(false)
+  const [bulkAssigning, setBulkAssigning] = useState(false)
   const [drawerClaimId, setDrawerClaimId] = useState<string | null>(null)
 
   const [typeOpen, setTypeOpen] = useState(false)
@@ -107,18 +109,24 @@ export default function QueuePage() {
 
   async function bulkAssignToMe() {
     if (!session?.user?.id || selected.size === 0) return
-    await Promise.all(
-      [...selected].map((id) =>
-        fetch('/api/admin/assign', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ claimId: id, adjusterId: session.user.id }),
-        })
+    setBulkAssigning(true)
+    try {
+      await Promise.all(
+        [...selected].map((id) =>
+          fetch('/api/admin/assign', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ claimId: id, adjusterId: session.user.id }),
+          })
+        )
       )
-    )
-    toast.success(`${selected.size} claim${selected.size !== 1 ? 's' : ''} assigned to you`)
-    setSelected(new Set())
-    fetchQueue()
+      toast.success(`${selected.size} claim${selected.size !== 1 ? 's' : ''} assigned to you`)
+      setSelected(new Set())
+      setBulkConfirmOpen(false)
+      fetchQueue()
+    } finally {
+      setBulkAssigning(false)
+    }
   }
 
   function toggleSelect(id: string) {
@@ -178,7 +186,7 @@ export default function QueuePage() {
           <p className="text-sm text-gray-500 mt-1">{total} claim{total !== 1 ? 's' : ''} total</p>
         </div>
         {selected.size > 0 && (
-          <Button size="sm" onClick={bulkAssignToMe}>
+          <Button size="sm" onClick={() => setBulkConfirmOpen(true)}>
             Assign {selected.size} to Me
           </Button>
         )}
@@ -415,6 +423,47 @@ export default function QueuePage() {
           setDrawerClaimId(null)
         }}
       />
+
+      <Modal
+        isOpen={bulkConfirmOpen}
+        onClose={() => !bulkAssigning && setBulkConfirmOpen(false)}
+        title="Confirm Bulk Assignment"
+        footer={
+          <>
+            <Button variant="secondary" size="md" disabled={bulkAssigning} onClick={() => setBulkConfirmOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" size="md" loading={bulkAssigning} onClick={bulkAssignToMe}>
+              Yes, Assign All
+            </Button>
+          </>
+        }
+      >
+        <div className="flex flex-col items-center text-center gap-4 py-2">
+          <div className="relative">
+            <div className="w-14 h-14 rounded-full bg-emerald-50 flex items-center justify-center">
+              <svg className="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              </svg>
+            </div>
+            <span className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-primary text-white text-[11px] font-bold flex items-center justify-center ring-2 ring-white">
+              {selected.size}
+            </span>
+          </div>
+          <div>
+            <h3 className="text-base font-semibold text-gray-900">
+              Assign {selected.size} claim{selected.size !== 1 ? 's' : ''} to yourself?
+            </h3>
+            <p className="mt-1.5 text-sm text-gray-500">
+              All{' '}
+              <span className="font-medium text-gray-700">
+                {selected.size} selected claim{selected.size !== 1 ? 's' : ''}
+              </span>{' '}
+              will be assigned to you and added to your queue.
+            </p>
+          </div>
+        </div>
+      </Modal>
 
       <Modal
         isOpen={!!pendingClaim}
