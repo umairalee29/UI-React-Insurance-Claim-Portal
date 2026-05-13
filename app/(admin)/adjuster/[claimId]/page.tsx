@@ -347,7 +347,7 @@ export default function ClaimReviewPage({ params }: { params: { claimId: string 
           </Card>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 sticky top-24 self-start">
           {nextOptions.length > 0 && (
             <Card title="Update Status">
               <div className="px-6 py-4 space-y-4">
