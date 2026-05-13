@@ -136,7 +136,7 @@ export default async function DashboardPage() {
     {
       label: 'Total Claims',
       value: stats.total,
-      sub: stats.total === 0 ? 'No claims filed yet' : `${stats.total} claim${stats.total > 1 ? 's' : ''} on file`,
+      sub: stats.total === 0 ? 'No claims filed yet' : 'Across all statuses',
       iconBg: 'bg-blue-50',
       iconColor: 'text-blue-600',
       borderColor: 'border-t-blue-500',
