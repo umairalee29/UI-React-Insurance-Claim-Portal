@@ -216,7 +216,6 @@ export default async function DashboardPage() {
             <p className="text-white/75 text-base max-w-sm leading-relaxed">
               {heroSummary}
             </p>
-
           </div>
 
           {/* Right: CTA */}
@@ -360,7 +359,6 @@ export default async function DashboardPage() {
                 </div>
               </div>
             ) : (
-              <>
               <div className="px-6 py-4 space-y-5">
                 {(['Today', 'Yesterday', 'Earlier'] as const).map((group) => {
                   const entries = allHistory.filter((e) => getDateGroup(e.changedAt) === group)
@@ -409,7 +407,6 @@ export default async function DashboardPage() {
                   )
                 })}
               </div>
-              </>
             )}
           </Card>
         </div>
