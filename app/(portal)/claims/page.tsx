@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useClaimsStore } from '@/hooks/useClaims'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { ClaimStatusBadge } from '@/components/claims/ClaimStatusBadge'
+import { ClaimTypeIcon, TYPE_CONFIG as TYPE_ICON_CONFIG } from '@/components/claims/ClaimTypeIcon'
 import { IClaim, ClaimStatus, ClaimType } from '@/types'
 
 function formatCurrency(n: number) {
@@ -115,6 +116,8 @@ function ClaimCardSkeleton() {
 export default function ClaimsPage() {
   const { claims, loading, total, totalPages, filters, setFilters, fetchClaims } = useClaimsStore()
   const [searchInput, setSearchInput] = useState(filters.search ?? '')
+  const [typeOpen, setTypeOpen] = useState(false)
+  const typeRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     fetchClaims()
@@ -126,6 +129,15 @@ export default function ClaimsPage() {
     }, 300)
     return () => clearTimeout(timer)
   }, [searchInput]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (typeRef.current && !typeRef.current.contains(e.target as Node))
+        setTypeOpen(false)
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const isFiltered = !!(filters.status || filters.type || filters.search)
 
@@ -156,8 +168,8 @@ export default function ClaimsPage() {
         {/* Filter bar */}
         <div className="px-4 pt-3 pb-2.5 border-b border-gray-100 space-y-2.5">
           {/* Row 1: search + type */}
-          <div className="flex gap-3">
-            <div className="relative flex-1">
+          <div className="grid grid-cols-4 gap-3">
+            <div className="relative col-span-3">
               <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
@@ -169,16 +181,49 @@ export default function ClaimsPage() {
                 className="w-full text-sm border border-gray-200 rounded-lg pl-9 pr-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30"
               />
             </div>
-            <select
-              value={filters.type ?? ''}
-              onChange={(e) => setFilters({ type: (e.target.value as ClaimType) || undefined })}
-              className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30"
-            >
-              <option value="">All Types</option>
-              {(Object.keys(TYPE_CONFIG) as ClaimType[]).map((t) => (
-                <option key={t} value={t}>{TYPE_CONFIG[t].label}</option>
-              ))}
-            </select>
+            <div ref={typeRef} className="relative">
+              <button
+                onClick={() => setTypeOpen((o) => !o)}
+                className="w-full flex items-center gap-2 text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-colors"
+              >
+                {filters.type ? (
+                  <ClaimTypeIcon type={filters.type as ClaimType} />
+                ) : (
+                  <span className="text-gray-500">All Types</span>
+                )}
+                <svg
+                  className={`ml-auto w-3.5 h-3.5 text-gray-400 transition-transform ${typeOpen ? 'rotate-180' : ''}`}
+                  viewBox="0 0 12 12" fill="none"
+                >
+                  <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+
+              {typeOpen && (
+                <div className="absolute z-20 mt-1.5 left-0 right-0 bg-white border border-gray-100 rounded-xl shadow-lg py-1">
+                  <button
+                    onClick={() => { setFilters({ type: undefined }); setTypeOpen(false) }}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 transition-colors ${!filters.type ? 'bg-gray-50' : ''}`}
+                  >
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-500">
+                      All Types
+                    </span>
+                  </button>
+                  {(Object.entries(TYPE_ICON_CONFIG) as [ClaimType, typeof TYPE_ICON_CONFIG[ClaimType]][]).map(([key, cfg]) => (
+                    <button
+                      key={key}
+                      onClick={() => { setFilters({ type: key }); setTypeOpen(false) }}
+                      className={`w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 transition-colors ${filters.type === key ? 'bg-gray-50' : ''}`}
+                    >
+                      <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-md ${cfg.bg} ${cfg.text}`}>
+                        <span>{cfg.icon}</span>
+                        {cfg.label}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Row 2: status pills */}
